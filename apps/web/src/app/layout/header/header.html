@@ -1,0 +1,77 @@
+<header class="sticky top-0 z-50 bg-white/90 dark:bg-neutral-900/90 backdrop-blur border-b border-neutral-200 dark:border-neutral-800">
+  <!-- Barra superior -->
+  <div class="mx-auto max-w-7xl px-4">
+    <div class="flex h-16 items-center gap-4">
+      <!-- Logo -->
+      <a routerLink="/" class="flex items-center gap-2 shrink-0">
+        <span class="grid h-9 w-9 place-items-center rounded-lg bg-indigo-600 text-white font-black">L</span>
+        <span class="text-lg font-extrabold tracking-tight text-neutral-900 dark:text-white">
+          legacy<span class="text-indigo-600">Store</span>
+        </span>
+      </a>
+
+      <!-- Busca -->
+      <div class="hidden md:flex flex-1 max-w-xl">
+        <div class="flex w-full items-center rounded-full border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-4 py-2 focus-within:ring-2 focus-within:ring-indigo-500">
+          <mat-icon class="text-neutral-400 !h-5 !w-5 !text-xl">search</mat-icon>
+          <input
+            type="search"
+            placeholder="Buscar cartas, boxes, acessórios..."
+            class="ml-2 w-full bg-transparent text-sm outline-none text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400"
+          />
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div class="ml-auto flex items-center gap-1">
+        <button mat-icon-button (click)="theme.toggle()" [attr.aria-label]="'Alternar tema'">
+          <mat-icon>{{ theme.theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+        </button>
+
+        <a mat-icon-button routerLink="/lista-de-desejos" aria-label="Lista de desejos">
+          <mat-icon>favorite_border</mat-icon>
+        </a>
+
+        <a mat-icon-button routerLink="/carrinho" aria-label="Carrinho">
+          <mat-icon>shopping_cart</mat-icon>
+        </a>
+
+        <!-- Conta -->
+        @if (auth.isAuthenticated()) {
+          <button mat-icon-button [matMenuTriggerFor]="accountMenu" aria-label="Minha conta">
+            <mat-icon>person</mat-icon>
+          </button>
+          <mat-menu #accountMenu="matMenu">
+            <a mat-menu-item routerLink="/conta">Minha conta</a>
+            <a mat-menu-item routerLink="/conta/pedidos">Meus pedidos</a>
+            @if (auth.isAdmin()) {
+              <a mat-menu-item routerLink="/admin">Painel administrativo</a>
+            }
+            <button mat-menu-item (click)="signOut()">Sair</button>
+          </mat-menu>
+        } @else {
+          <a mat-button routerLink="/entrar" class="!ml-1">Entrar</a>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Navegação de categorias -->
+  <nav class="border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950">
+    <div class="mx-auto max-w-7xl px-4">
+      <ul class="flex gap-1 overflow-x-auto py-2 text-sm font-medium">
+        @for (game of games; track game.slug) {
+          <li>
+            <a
+              [routerLink]="['/c', game.slug]"
+              routerLinkActive="bg-indigo-600 text-white"
+              class="block whitespace-nowrap rounded-full px-4 py-1.5 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors"
+            >
+              {{ game.label }}
+            </a>
+          </li>
+        }
+      </ul>
+    </div>
+  </nav>
+</header>

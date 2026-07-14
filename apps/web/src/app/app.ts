@@ -1,12 +1,15 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { Header } from './layout/header/header';
+import { Footer } from './layout/footer/footer';
+import { ThemeService } from './core/theme/theme.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, Header, Footer],
   templateUrl: './app.html',
-  styleUrl: './app.scss',
 })
 export class App {
-  protected readonly title = signal('web');
+  // Instancia o ThemeService no arranque para aplicar o tema salvo.
+  private readonly theme = inject(ThemeService);
 }
