@@ -1,0 +1,35 @@
+<div class="mx-auto max-w-6xl px-4 py-8">
+  <h1 class="text-2xl font-bold text-neutral-900 dark:text-white">Minha conta</h1>
+  <p class="mt-1 text-sm text-neutral-500">{{ auth.profile()?.full_name || auth.user()?.email }}</p>
+
+  <div class="mt-6 grid gap-8 lg:grid-cols-4">
+    <!-- Menu lateral -->
+    <aside class="lg:col-span-1">
+      <nav class="space-y-1 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-3">
+        @for (item of nav; track item.path) {
+          <a
+            [routerLink]="item.path"
+            [routerLinkActiveOptions]="{ exact: item.exact }"
+            routerLinkActive="bg-brand text-white"
+            class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
+          >
+            <mat-icon class="!h-5 !w-5 !text-xl">{{ item.icon }}</mat-icon>
+            {{ item.label }}
+          </a>
+        }
+        <button
+          (click)="signOut()"
+          class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition"
+        >
+          <mat-icon class="!h-5 !w-5 !text-xl">logout</mat-icon>
+          Sair
+        </button>
+      </nav>
+    </aside>
+
+    <!-- Conteúdo -->
+    <div class="lg:col-span-3">
+      <router-outlet />
+    </div>
+  </div>
+</div>

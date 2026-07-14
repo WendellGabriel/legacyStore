@@ -78,4 +78,13 @@ export class AuthService {
     await this.supabase.client.auth.signOut();
     this._profile.set(null);
   }
+
+  /** Atualiza o perfil do usuário logado (nome, telefone, cpf). */
+  async updateProfile(patch: { full_name?: string; phone?: string; cpf?: string }) {
+    const uid = this.user()?.id;
+    if (!uid) return { error: 'Não autenticado' };
+    const { error } = await this.supabase.client.from('profiles').update(patch).eq('id', uid);
+    if (!error) await this.loadProfile();
+    return { error: error?.message ?? null };
+  }
 }

@@ -50,6 +50,18 @@ export class OrderService {
     return (data as Order) ?? null;
   }
 
+  /** Histórico de mudanças de status de um pedido. */
+  async getStatusHistory(
+    orderId: string,
+  ): Promise<{ to_status: string; created_at: string }[]> {
+    const { data } = await this.supabase.client
+      .from('order_status_history')
+      .select('to_status, created_at')
+      .eq('order_id', orderId)
+      .order('created_at', { ascending: true });
+    return (data as { to_status: string; created_at: string }[]) ?? [];
+  }
+
   private translate(msg: string): string {
     if (/estoque insuficiente/i.test(msg)) return msg;
     if (/indispon/i.test(msg)) return 'Um dos produtos ficou indisponível.';

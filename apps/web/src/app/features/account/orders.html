@@ -1,0 +1,42 @@
+<div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6">
+  <h2 class="text-lg font-semibold text-neutral-900 dark:text-white">Meus pedidos</h2>
+
+  @if (loading()) {
+    <div class="mt-4 space-y-3">
+      @for (i of [1,2,3]; track i) {
+        <div class="h-20 animate-pulse rounded-xl bg-neutral-200 dark:bg-neutral-800"></div>
+      }
+    </div>
+  } @else if (orders().length === 0) {
+    <div class="mt-6 grid place-items-center py-12 text-center">
+      <mat-icon class="!h-12 !w-12 !text-5xl text-neutral-300">receipt_long</mat-icon>
+      <p class="mt-3 text-neutral-500">Você ainda não fez nenhum pedido.</p>
+      <a routerLink="/produtos" mat-flat-button color="primary" class="!mt-4 !rounded-xl">Explorar produtos</a>
+    </div>
+  } @else {
+    <div class="mt-4 space-y-3">
+      @for (order of orders(); track order.id) {
+        <a
+          [routerLink]="['/conta/pedidos', order.order_number]"
+          class="flex items-center justify-between gap-4 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 transition hover:border-brand"
+        >
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-neutral-900 dark:text-white">{{ order.order_number }}</span>
+              <span class="rounded-full px-2 py-0.5 text-xs font-medium" [class]="statusStyle[order.status]">
+                {{ statusLabels[order.status] }}
+              </span>
+            </div>
+            <p class="mt-1 text-xs text-neutral-500">
+              {{ formatDate(order.created_at) }} · {{ (order.items?.length ?? 0) }} item(ns)
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="font-bold text-neutral-900 dark:text-white">{{ order.grand_total | brl }}</span>
+            <mat-icon class="text-neutral-400">chevron_right</mat-icon>
+          </div>
+        </a>
+      }
+    </div>
+  }
+</div>

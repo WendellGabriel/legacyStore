@@ -77,6 +77,36 @@ export const routes: Routes = [
     title: 'Pedido — legacyStore',
   },
 
-  // As rotas de conta e admin entram nas próximas fases.
+  // Conta do cliente (requer login) — layout com sub-rotas
+  {
+    path: 'conta',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/account/account').then((m) => m.Account),
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/account/profile').then((m) => m.Profile),
+        title: 'Meu perfil — legacyStore',
+      },
+      {
+        path: 'pedidos',
+        loadComponent: () => import('./features/account/orders').then((m) => m.Orders),
+        title: 'Meus pedidos — legacyStore',
+      },
+      {
+        path: 'pedidos/:orderNumber',
+        loadComponent: () =>
+          import('./features/account/order-detail').then((m) => m.OrderDetail),
+        title: 'Pedido — legacyStore',
+      },
+      {
+        path: 'enderecos',
+        loadComponent: () => import('./features/account/addresses').then((m) => m.Addresses),
+        title: 'Endereços — legacyStore',
+      },
+    ],
+  },
+
+  // A rota de admin entra na próxima fase.
   { path: '**', redirectTo: '' },
 ];

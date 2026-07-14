@@ -1,0 +1,47 @@
+<div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6">
+  <h2 class="text-lg font-semibold text-neutral-900 dark:text-white">Meu perfil</h2>
+
+  <form [formGroup]="form" (ngSubmit)="save()" class="mt-4 flex max-w-md flex-col gap-1">
+    <mat-form-field appearance="outline">
+      <mat-label>E-mail</mat-label>
+      <input matInput [value]="email" disabled />
+      <mat-icon matPrefix>mail</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Nome completo</mat-label>
+      <input matInput formControlName="full_name" autocomplete="name" />
+      <mat-icon matPrefix>person</mat-icon>
+      @if (form.controls.full_name.invalid && form.controls.full_name.touched) {
+        <mat-error>Informe seu nome</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Telefone</mat-label>
+      <input matInput formControlName="phone" autocomplete="tel" />
+      <mat-icon matPrefix>phone</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>CPF</mat-label>
+      <input matInput formControlName="cpf" />
+      <mat-icon matPrefix>badge</mat-icon>
+    </mat-form-field>
+
+    <div class="mt-2 flex items-center gap-3">
+      <button mat-flat-button color="primary" type="submit" [disabled]="saving()" class="!rounded-xl">
+        @if (saving()) {
+          <mat-progress-spinner diameter="20" mode="indeterminate" />
+        } @else {
+          Salvar alterações
+        }
+      </button>
+      @if (saved()) {
+        <span class="flex items-center gap-1 text-sm text-green-600">
+          <mat-icon class="!h-5 !w-5 !text-xl">check_circle</mat-icon> Salvo!
+        </span>
+      }
+    </div>
+  </form>
+</div>
