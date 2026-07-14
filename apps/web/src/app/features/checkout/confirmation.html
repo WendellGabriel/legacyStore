@@ -3,15 +3,33 @@
     <div class="h-64 animate-pulse rounded-3xl bg-neutral-200 dark:bg-neutral-800"></div>
   } @else if (order(); as o) {
     <div class="rounded-3xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-8 text-center">
-      <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-green-100 dark:bg-green-900/40">
-        <mat-icon class="!h-9 !w-9 !text-4xl text-green-600">check_circle</mat-icon>
-      </div>
-      <h1 class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white">Pedido confirmado!</h1>
-      <p class="mt-1 text-sm text-neutral-500">
+      <!-- Ícone/estado por status de pagamento -->
+      @if (isPaid()) {
+        <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-green-100 dark:bg-green-900/40">
+          <mat-icon class="!h-9 !w-9 !text-4xl text-green-600">check_circle</mat-icon>
+        </div>
+        <h1 class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white">Pagamento confirmado!</h1>
+        <p class="mt-1 text-sm text-neutral-500">Seu pedido está sendo preparado.</p>
+      } @else if (returnStatus() === 'recusado') {
+        <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-red-100 dark:bg-red-900/40">
+          <mat-icon class="!h-9 !w-9 !text-4xl text-red-600">error</mat-icon>
+        </div>
+        <h1 class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white">Pagamento não aprovado</h1>
+        <p class="mt-1 text-sm text-neutral-500">Você pode tentar novamente pelo seu pedido.</p>
+      } @else {
+        <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-amber-100 dark:bg-amber-900/40">
+          <mat-icon class="!h-9 !w-9 !text-4xl text-amber-600">schedule</mat-icon>
+        </div>
+        <h1 class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white">Pedido criado!</h1>
+        <p class="mt-1 text-sm text-neutral-500">Aguardando confirmação do pagamento.</p>
+      }
+
+      <p class="mt-3 text-sm text-neutral-500">
         Pedido <strong class="text-neutral-800 dark:text-neutral-200">{{ o.order_number }}</strong> ·
         {{ statusLabels[o.status] }}
       </p>
 
+      <!-- Itens e totais -->
       <div class="mt-6 space-y-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 p-4 text-left text-sm">
         @for (item of o.items ?? []; track item.id) {
           <div class="flex justify-between text-neutral-600 dark:text-neutral-300">
@@ -29,9 +47,21 @@
         </div>
       </div>
 
-      <div class="mt-6 rounded-xl bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
-        Próximo passo: pagamento (PIX/cartão) — em breve.
-      </div>
+      <!-- Modo dev: simular pagamento -->
+      @if (devMode() && isPending()) {
+        <div class="mt-6 rounded-xl border border-dashed border-amber-400 bg-amber-50 dark:bg-amber-950/30 p-4">
+          <p class="text-xs text-amber-700 dark:text-amber-300">
+            Modo desenvolvimento (Mercado Pago não configurado).
+          </p>
+          <button mat-flat-button color="primary" class="!mt-3 !rounded-xl" [disabled]="confirming()" (click)="simulatePayment()">
+            @if (confirming()) {
+              <mat-progress-spinner diameter="20" mode="indeterminate" />
+            } @else {
+              Simular pagamento aprovado
+            }
+          </button>
+        </div>
+      }
 
       <div class="mt-6 flex justify-center gap-3">
         <a routerLink="/conta/pedidos" mat-flat-button color="primary" class="!rounded-xl">Meus pedidos</a>

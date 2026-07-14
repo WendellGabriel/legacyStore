@@ -10,6 +10,7 @@ import { CartService } from '../../core/cart/cart.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { AddressService } from '../account/address.service';
 import { OrderService } from '../account/order.service';
+import { PaymentService } from './payment.service';
 import { BrlPipe } from '../../shared/pipes/brl.pipe';
 
 @Component({
@@ -29,6 +30,7 @@ export class Checkout {
   private readonly auth = inject(AuthService);
   private readonly addressService = inject(AddressService);
   private readonly orderService = inject(OrderService);
+  private readonly payment = inject(PaymentService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
 
@@ -160,14 +162,24 @@ export class Checkout {
       customerPhone: this.auth.profile()?.phone ?? undefined,
     });
 
-    this.placing.set(false);
-
     if (error || !order) {
+      this.placing.set(false);
       this.placeError.set(error ?? 'Erro ao finalizar o pedido.');
       return;
     }
 
+    // Pedido criado → inicia o pagamento
+    const result = await this.payment.startCheckout(order.order_number);
     this.cart.clear();
+
+    if (result.init_point) {
+      // Redireciona para a tela do Mercado Pago
+      window.location.href = result.init_point;
+      return;
+    }
+
+    // Modo dev (sem Mercado Pago) ou erro → vai para a confirmação
+    this.placing.set(false);
     void this.router.navigate(['/pedido', order.order_number]);
   }
 }

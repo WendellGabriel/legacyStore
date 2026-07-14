@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { shippingRoutes } from './routes/shipping';
+import { paymentRoutes } from './routes/payments';
 
 /**
  * App Hono do legacyStore.
@@ -14,5 +15,6 @@ app.use('*', cors());
 app.get('/health', (c) => c.json({ ok: true, service: 'legacystore-api' }));
 
 app.route('/shipping', shippingRoutes);
+app.route('/payments', paymentRoutes);
 
 export default app;
