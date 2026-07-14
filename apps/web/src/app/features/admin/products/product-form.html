@@ -1,0 +1,136 @@
+<div class="mx-auto max-w-3xl">
+  <a routerLink="/admin/produtos" class="inline-flex items-center gap-1 text-sm text-brand hover:underline">
+    <mat-icon class="!h-5 !w-5 !text-xl">arrow_back</mat-icon> Voltar
+  </a>
+  <h1 class="mt-2 text-2xl font-bold text-neutral-900 dark:text-white">
+    {{ isNew() ? 'Novo produto' : 'Editar produto' }}
+  </h1>
+
+  @if (error()) {
+    <div class="mt-4 rounded-xl bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-300">{{ error() }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="save()" class="mt-6 space-y-6">
+    <!-- Dados básicos -->
+    <section class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6">
+      <h2 class="text-sm font-semibold text-neutral-900 dark:text-white">Dados básicos</h2>
+      <div class="mt-4 grid gap-4 sm:grid-cols-2">
+        <label class="sm:col-span-2 text-sm">
+          <span class="text-neutral-600 dark:text-neutral-300">Nome</span>
+          <input formControlName="name" (blur)="onNameBlur()" class="mt-1 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-brand" />
+        </label>
+        <label class="text-sm">
+          <span class="text-neutral-600 dark:text-neutral-300">Slug (URL)</span>
+          <input formControlName="slug" class="mt-1 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-brand" />
+        </label>
+        <label class="text-sm">
+          <span class="text-neutral-600 dark:text-neutral-300">SKU</span>
+          <input formControlName="sku" class="mt-1 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-brand" />
+        </label>
+        <label class="text-sm">
+          <span class="text-neutral-600 dark:text-neutral-300">Categoria</span>
+          <select formControlName="category_id" class="mt-1 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-brand">
+            <option value="">— sem categoria —</option>
+            @for (c of categories(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+          </select>
+        </label>
+        <label class="text-sm">
+          <span class="text-neutral-600 dark:text-neutral-300">Tipo</span>
+          <select formControlName="product_type" class="mt-1 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-brand">
+            @for (t of productTypes; track t) { <option [value]="t">{{ t }}</option> }
+          </select>
+        </label>
+        <label class="sm:col-span-2 text-sm">
+          <span class="text-neutral-600 dark:text-neutral-300">Descrição</span>
+          <textarea formControlName="description" rows="3" class="mt-1 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-brand"></textarea>
+        </label>
+      </div>
+    </section>
+
+    <!-- Preço e estoque -->
+    <section class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6">
+      <h2 class="text-sm font-semibold text-neutral-900 dark:text-white">Preço, estoque e logística</h2>
+      <div class="mt-4 grid gap-4 sm:grid-cols-3">
+        <label class="text-sm">
+          <span class="text-neutral-600 dark:text-neutral-300">Preço (R$)</span>
+          <input type="number" step="0.01" formControlName="price" class="mt-1 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-brand" />
+        </label>
+        <label class="text-sm">
+          <span class="text-neutral-600 dark:text-neutral-300">Preço "de" (promoção)</span>
+          <input type="number" step="0.01" formControlName="compare_at_price" class="mt-1 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-brand" />
+        </label>
+        <label class="text-sm">
+          <span class="text-neutral-600 dark:text-neutral-300">Peso (g)</span>
+          <input type="number" formControlName="weight_grams" class="mt-1 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-brand" />
+        </label>
+        <label class="text-sm">
+          <span class="text-neutral-600 dark:text-neutral-300">Estoque</span>
+          <input type="number" formControlName="stock_quantity" class="mt-1 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-brand" />
+        </label>
+        <label class="text-sm">
+          <span class="text-neutral-600 dark:text-neutral-300">Alerta de estoque baixo</span>
+          <input type="number" formControlName="low_stock_threshold" class="mt-1 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-brand" />
+        </label>
+      </div>
+    </section>
+
+    <!-- Fotos -->
+    <section class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6">
+      <h2 class="text-sm font-semibold text-neutral-900 dark:text-white">Fotos</h2>
+      <div class="mt-4 flex flex-wrap gap-3">
+        @for (img of images(); track img.id) {
+          <div class="relative h-24 w-24 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
+            <img [src]="img.url" class="h-full w-full object-cover" />
+            <button type="button" (click)="removeImage(img)" class="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-black/60 text-white" aria-label="Remover">
+              <mat-icon class="!h-4 !w-4 !text-base">close</mat-icon>
+            </button>
+          </div>
+        }
+        @for (file of pendingFiles(); track $index) {
+          <div class="relative grid h-24 w-24 place-items-center rounded-xl border border-dashed border-brand bg-brand/5 text-center text-xs text-brand">
+            <span class="line-clamp-2 px-1">{{ file.name }}</span>
+            <button type="button" (click)="removePending($index)" class="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-black/60 text-white" aria-label="Remover">
+              <mat-icon class="!h-4 !w-4 !text-base">close</mat-icon>
+            </button>
+          </div>
+        }
+        <label class="grid h-24 w-24 cursor-pointer place-items-center rounded-xl border border-dashed border-neutral-300 dark:border-neutral-600 text-neutral-400 hover:border-brand hover:text-brand">
+          <mat-icon>add_photo_alternate</mat-icon>
+          <input type="file" accept="image/*" multiple (change)="onFilesSelected($event)" class="hidden" />
+        </label>
+      </div>
+      <p class="mt-2 text-xs text-neutral-400">As fotos são enviadas ao salvar. Requer o bucket "products" no Supabase Storage.</p>
+    </section>
+
+    <!-- Flags e SEO -->
+    <section class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6">
+      <h2 class="text-sm font-semibold text-neutral-900 dark:text-white">Visibilidade e SEO</h2>
+      <div class="mt-4 flex gap-6">
+        <label class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+          <input type="checkbox" formControlName="is_active" class="h-4 w-4 accent-[var(--color-brand)]" /> Ativo
+        </label>
+        <label class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+          <input type="checkbox" formControlName="is_featured" class="h-4 w-4 accent-[var(--color-brand)]" /> Destaque
+        </label>
+      </div>
+      <div class="mt-4 grid gap-4">
+        <label class="text-sm">
+          <span class="text-neutral-600 dark:text-neutral-300">Título SEO</span>
+          <input formControlName="seo_title" class="mt-1 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-brand" />
+        </label>
+        <label class="text-sm">
+          <span class="text-neutral-600 dark:text-neutral-300">Descrição SEO</span>
+          <textarea formControlName="seo_description" rows="2" class="mt-1 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 outline-none focus:ring-2 focus:ring-brand"></textarea>
+        </label>
+      </div>
+    </section>
+
+    <div class="flex gap-3">
+      <button type="submit" [disabled]="saving()" class="inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-2.5 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-50">
+        @if (saving()) { <mat-progress-spinner diameter="18" mode="indeterminate" /> Salvando... }
+        @else { Salvar produto }
+      </button>
+      <a routerLink="/admin/produtos" class="rounded-xl border border-neutral-300 dark:border-neutral-700 px-6 py-2.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800">Cancelar</a>
+    </div>
+  </form>
+</div>

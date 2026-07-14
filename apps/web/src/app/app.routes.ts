@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { Home } from './features/home/home';
-import { authGuard } from './core/auth/auth.guard';
+import { authGuard, adminGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
   { path: '', component: Home, title: 'legacyStore — Trading Card Games' },
@@ -107,6 +107,33 @@ export const routes: Routes = [
     ],
   },
 
-  // A rota de admin entra na próxima fase.
+  // Painel administrativo (requer role admin)
+  {
+    path: 'admin',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./features/admin/admin').then((m) => m.Admin),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/admin/dashboard/dashboard').then((m) => m.Dashboard),
+        title: 'Dashboard — Admin',
+      },
+      {
+        path: 'produtos',
+        loadComponent: () => import('./features/admin/products/products').then((m) => m.Products),
+        title: 'Produtos — Admin',
+      },
+      {
+        path: 'produtos/:id',
+        loadComponent: () =>
+          import('./features/admin/products/product-form').then((m) => m.ProductForm),
+        title: 'Produto — Admin',
+      },
+      // demais seções entram na parte 2 da Fase 7
+      { path: '**', redirectTo: '' },
+    ],
+  },
+
   { path: '**', redirectTo: '' },
 ];

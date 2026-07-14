@@ -1,0 +1,77 @@
+<h1 class="text-2xl font-bold text-neutral-900 dark:text-white">Dashboard</h1>
+
+@if (loading()) {
+  <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    @for (i of [1,2,3,4]; track i) {
+      <div class="h-28 animate-pulse rounded-2xl bg-neutral-200 dark:bg-neutral-800"></div>
+    }
+  </div>
+} @else if (stats(); as s) {
+  <!-- KPIs -->
+  <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+      <div class="flex items-center gap-2 text-sm text-neutral-500"><mat-icon class="!h-5 !w-5 !text-xl text-green-600">payments</mat-icon> Faturamento</div>
+      <p class="mt-2 text-2xl font-black text-neutral-900 dark:text-white">{{ s.revenue | brl }}</p>
+      <p class="text-xs text-neutral-400">{{ s.paid_orders }} pedido(s) pago(s)</p>
+    </div>
+    <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+      <div class="flex items-center gap-2 text-sm text-neutral-500"><mat-icon class="!h-5 !w-5 !text-xl text-amber-600">pending_actions</mat-icon> Pendentes</div>
+      <p class="mt-2 text-2xl font-black text-neutral-900 dark:text-white">{{ s.pending_orders }}</p>
+      <p class="text-xs text-neutral-400">{{ s.total_orders }} pedidos no total</p>
+    </div>
+    <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+      <div class="flex items-center gap-2 text-sm text-neutral-500"><mat-icon class="!h-5 !w-5 !text-xl text-brand">inventory_2</mat-icon> Produtos</div>
+      <p class="mt-2 text-2xl font-black text-neutral-900 dark:text-white">{{ s.total_products }}</p>
+      <p class="text-xs text-neutral-400">{{ s.total_customers }} cliente(s)</p>
+    </div>
+    <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+      <div class="flex items-center gap-2 text-sm text-neutral-500"><mat-icon class="!h-5 !w-5 !text-xl text-red-600">warning</mat-icon> Estoque</div>
+      <p class="mt-2 text-2xl font-black text-neutral-900 dark:text-white">{{ s.out_of_stock }}</p>
+      <p class="text-xs text-neutral-400">{{ s.low_stock }} com estoque baixo</p>
+    </div>
+  </div>
+
+  <div class="mt-6 grid gap-6 lg:grid-cols-3">
+    <!-- Gráfico de faturamento (7 dias) -->
+    <div class="lg:col-span-2 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6">
+      <h2 class="text-sm font-semibold text-neutral-900 dark:text-white">Faturamento — últimos 7 dias</h2>
+      <div class="mt-6 flex h-48 items-end justify-between gap-2">
+        @for (bar of chart(); track bar.date) {
+          <div class="flex flex-1 flex-col items-center gap-2">
+            <div class="flex w-full flex-1 items-end">
+              <div class="w-full rounded-t-md bg-brand transition-all" [style.height.%]="bar.pct" [title]="bar.total"></div>
+            </div>
+            <span class="text-xs text-neutral-400">{{ bar.date }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Mais vendidos -->
+    <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6">
+      <h2 class="text-sm font-semibold text-neutral-900 dark:text-white">Mais vendidos</h2>
+      @if (s.top_products.length === 0) {
+        <p class="mt-4 text-sm text-neutral-400">Sem vendas ainda.</p>
+      } @else {
+        <ol class="mt-4 space-y-3">
+          @for (p of s.top_products; track p.name; let i = $index) {
+            <li class="flex items-center gap-3 text-sm">
+              <span class="grid h-6 w-6 place-items-center rounded-full bg-brand/10 text-xs font-bold text-brand">{{ i + 1 }}</span>
+              <span class="line-clamp-1 flex-1 text-neutral-700 dark:text-neutral-300">{{ p.name }}</span>
+              <span class="font-semibold text-neutral-900 dark:text-white">{{ p.sold }}</span>
+            </li>
+          }
+        </ol>
+      }
+    </div>
+  </div>
+
+  <div class="mt-6 flex flex-wrap gap-3">
+    <a routerLink="/admin/produtos" class="rounded-xl bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">Gerenciar produtos</a>
+    <a routerLink="/admin/pedidos" class="rounded-xl border border-neutral-300 dark:border-neutral-700 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800">Ver pedidos</a>
+  </div>
+} @else {
+  <p class="mt-6 rounded-xl bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+    Não foi possível carregar o dashboard. Verifique se a migration 0012 (admin_dashboard_stats) foi aplicada.
+  </p>
+}

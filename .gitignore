@@ -29,3 +29,7 @@ Thumbs.db
 
 # Testing
 coverage/
+
+# scripts temporários (nunca commitar — podem conter segredos)
+_*.mjs
+apps/*/_*.mjs
