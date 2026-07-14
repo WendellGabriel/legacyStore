@@ -9,6 +9,19 @@
     <meta name="theme-color" content="#1e5fd8" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
 
+    <!-- Aplica o tema ANTES do primeiro paint (evita flash da logo/cores erradas) -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('legacystore-theme');
+          if (t !== 'light' && t !== 'dark') {
+            t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          if (t === 'dark') document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Fontes: Roboto (tipografia Material) + Material Symbols (ícones) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
