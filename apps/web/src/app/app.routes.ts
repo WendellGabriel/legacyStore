@@ -28,6 +28,28 @@ export const routes: Routes = [
     title: 'Nova senha — legacyStore',
   },
 
-  // As rotas de catálogo, carrinho, conta e admin entram nas próximas fases.
+  // Catálogo (lazy loaded)
+  {
+    path: 'produtos',
+    loadComponent: () => import('./features/catalog/catalog').then((m) => m.Catalog),
+    title: 'Produtos — legacyStore',
+  },
+  {
+    path: 'busca',
+    loadComponent: () => import('./features/catalog/catalog').then((m) => m.Catalog),
+    title: 'Busca — legacyStore',
+  },
+  {
+    path: 'c/:slug',
+    loadComponent: () => import('./features/catalog/catalog').then((m) => m.Catalog),
+    title: 'Categoria — legacyStore',
+  },
+  {
+    path: 'p/:slug',
+    loadComponent: () => import('./features/product/product').then((m) => m.Product),
+    title: 'Produto — legacyStore',
+  },
+
+  // As rotas de carrinho, conta e admin entram nas próximas fases.
   { path: '**', redirectTo: '' },
 ];

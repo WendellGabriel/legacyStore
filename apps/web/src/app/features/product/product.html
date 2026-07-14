@@ -1,0 +1,143 @@
+@if (loading()) {
+  <div class="mx-auto max-w-7xl px-4 py-10">
+    <div class="grid gap-8 md:grid-cols-2">
+      <div class="aspect-square animate-pulse rounded-3xl bg-neutral-200 dark:bg-neutral-800"></div>
+      <div class="space-y-4">
+        <div class="h-8 w-3/4 animate-pulse rounded bg-neutral-200 dark:bg-neutral-800"></div>
+        <div class="h-6 w-1/3 animate-pulse rounded bg-neutral-200 dark:bg-neutral-800"></div>
+        <div class="h-24 animate-pulse rounded bg-neutral-200 dark:bg-neutral-800"></div>
+      </div>
+    </div>
+  </div>
+} @else if (product(); as p) {
+  <div class="mx-auto max-w-7xl px-4 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-6 text-xs text-neutral-500">
+      <a routerLink="/" class="hover:text-brand">Início</a>
+      <span class="mx-1">/</span>
+      @if (p.category; as cat) {
+        <a [routerLink]="['/c', cat.slug]" class="hover:text-brand">{{ cat.name }}</a>
+        <span class="mx-1">/</span>
+      }
+      <span class="text-neutral-700 dark:text-neutral-300">{{ p.name }}</span>
+    </nav>
+
+    <div class="grid gap-8 md:grid-cols-2">
+      <!-- Galeria -->
+      <div>
+        <div class="relative aspect-square overflow-hidden rounded-3xl border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800">
+          @if (discount(); as pct) {
+            <span class="absolute left-3 top-3 z-10 rounded-full bg-brand px-3 py-1 text-sm font-bold text-white">-{{ pct }}%</span>
+          }
+          @if (activeImage(); as url) {
+            <img [src]="url" [alt]="p.name" class="h-full w-full object-cover" />
+          } @else {
+            <div class="grid h-full w-full place-items-center text-8xl text-neutral-300">🃏</div>
+          }
+        </div>
+        @if (images().length > 1) {
+          <div class="mt-3 flex gap-2 overflow-x-auto">
+            @for (img of images(); track img.id) {
+              <button
+                (click)="activeImage.set(img.url)"
+                class="h-20 w-20 shrink-0 overflow-hidden rounded-xl border-2 transition"
+                [class]="activeImage() === img.url ? 'border-brand' : 'border-transparent'"
+              >
+                <img [src]="img.url" [alt]="img.alt ?? p.name" class="h-full w-full object-cover" />
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Info + compra -->
+      <div>
+        @if (p.category; as cat) {
+          <a [routerLink]="['/c', cat.slug]" class="text-sm font-medium text-brand hover:underline">{{ cat.name }}</a>
+        }
+        <h1 class="mt-1 text-3xl font-bold text-neutral-900 dark:text-white">{{ p.name }}</h1>
+        <p class="mt-1 text-xs text-neutral-400">SKU: {{ p.sku }}</p>
+
+        <!-- Preço -->
+        <div class="mt-5 flex items-baseline gap-3">
+          <span class="text-4xl font-black text-neutral-900 dark:text-white">{{ p.price | brl }}</span>
+          @if (discount()) {
+            <span class="text-lg text-neutral-400 line-through">{{ p.compare_at_price | brl }}</span>
+          }
+        </div>
+
+        <!-- Estoque -->
+        <div class="mt-3">
+          @if (outOfStock()) {
+            <span class="inline-flex items-center gap-1 text-sm font-medium text-red-600">
+              <mat-icon class="!h-5 !w-5 !text-xl">block</mat-icon> Indisponível
+            </span>
+          } @else if (lowStock()) {
+            <span class="inline-flex items-center gap-1 text-sm font-medium text-amber-600">
+              <mat-icon class="!h-5 !w-5 !text-xl">warning</mat-icon> Últimas {{ p.stock_quantity }} unidades
+            </span>
+          } @else {
+            <span class="inline-flex items-center gap-1 text-sm font-medium text-green-600">
+              <mat-icon class="!h-5 !w-5 !text-xl">check_circle</mat-icon> Em estoque
+            </span>
+          }
+        </div>
+
+        <!-- Quantidade + comprar -->
+        @if (!outOfStock()) {
+          <div class="mt-6 flex items-center gap-3">
+            <div class="flex items-center rounded-xl border border-neutral-300 dark:border-neutral-700">
+              <button (click)="changeQty(-1)" class="grid h-11 w-11 place-items-center text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800" aria-label="Diminuir">
+                <mat-icon>remove</mat-icon>
+              </button>
+              <span class="w-10 text-center font-semibold text-neutral-900 dark:text-white">{{ quantity() }}</span>
+              <button (click)="changeQty(1)" class="grid h-11 w-11 place-items-center text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800" aria-label="Aumentar">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+            <button mat-flat-button color="primary" class="!h-11 !flex-1 !rounded-xl" (click)="addToCart()">
+              <mat-icon>shopping_cart</mat-icon>
+              Adicionar ao carrinho
+            </button>
+          </div>
+          <button class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-neutral-500 hover:text-brand">
+            <mat-icon class="!h-5 !w-5 !text-xl">favorite_border</mat-icon>
+            Adicionar à lista de desejos
+          </button>
+        }
+
+        <!-- Descrição -->
+        @if (p.description) {
+          <div class="mt-8 border-t border-neutral-200 dark:border-neutral-800 pt-6">
+            <h2 class="text-sm font-semibold text-neutral-900 dark:text-white">Descrição</h2>
+            <p class="mt-2 whitespace-pre-line text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">{{ p.description }}</p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Relacionados -->
+    @if (related().length > 0) {
+      <section class="mt-16">
+        <h2 class="mb-6 text-2xl font-bold text-neutral-900 dark:text-white">Você também pode gostar</h2>
+        <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+          @for (rp of related(); track rp.id) {
+            <app-product-card [product]="rp" />
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Recém-vistos -->
+    @if (recentlyViewed().length > 0) {
+      <section class="mt-16">
+        <h2 class="mb-6 text-2xl font-bold text-neutral-900 dark:text-white">Vistos recentemente</h2>
+        <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+          @for (rp of recentlyViewed(); track rp.id) {
+            <app-product-card [product]="rp" />
+          }
+        </div>
+      </section>
+    }
+  </div>
+}

@@ -1,0 +1,44 @@
+<a
+  [routerLink]="['/p', product().slug]"
+  class="group relative flex flex-col overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 transition hover:shadow-lg hover:-translate-y-0.5"
+>
+  <!-- Badges -->
+  <div class="absolute left-2 top-2 z-10 flex flex-col gap-1">
+    @if (discount(); as pct) {
+      <span class="rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-white">-{{ pct }}%</span>
+    }
+    @if (outOfStock()) {
+      <span class="rounded-full bg-neutral-800/90 px-2 py-0.5 text-xs font-bold text-white">Esgotado</span>
+    }
+  </div>
+
+  <!-- Imagem -->
+  <div class="aspect-square overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+    @if (image(); as url) {
+      <img
+        [src]="url"
+        [alt]="product().name"
+        loading="lazy"
+        class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+        [class.opacity-50]="outOfStock()"
+      />
+    } @else {
+      <div class="grid h-full w-full place-items-center text-5xl text-neutral-300">🃏</div>
+    }
+  </div>
+
+  <!-- Info -->
+  <div class="flex flex-1 flex-col p-4">
+    <h3 class="line-clamp-2 text-sm font-medium text-neutral-800 dark:text-neutral-100">
+      {{ product().name }}
+    </h3>
+    <div class="mt-auto pt-3">
+      <div class="flex items-baseline gap-2">
+        <span class="text-lg font-bold text-neutral-900 dark:text-white">{{ product().price | brl }}</span>
+        @if (discount()) {
+          <span class="text-xs text-neutral-400 line-through">{{ product().compare_at_price | brl }}</span>
+        }
+      </div>
+    </div>
+  </div>
+</a>

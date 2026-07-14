@@ -2,10 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { Banner, Product } from '@legacystore/shared';
 import { SupabaseService } from '../../core/supabase/supabase.service';
+import { ProductCard } from '../../shared/ui/product-card/product-card';
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink],
+  imports: [RouterLink, ProductCard],
   templateUrl: './home.html',
 })
 export class Home {
@@ -13,6 +14,7 @@ export class Home {
 
   protected readonly banners = signal<Banner[]>([]);
   protected readonly featured = signal<Product[]>([]);
+  protected readonly onSale = signal<Product[]>([]);
   protected readonly loading = signal(true);
 
   constructor() {
@@ -20,26 +22,26 @@ export class Home {
   }
 
   private async load(): Promise<void> {
-    const [banners, featured] = await Promise.all([
-      this.supabase.client
-        .from('banners')
-        .select('*')
-        .eq('is_active', true)
-        .order('position'),
+    const select = '*, images:product_images(*)';
+    const [banners, featured, onSale] = await Promise.all([
+      this.supabase.client.from('banners').select('*').eq('is_active', true).order('position'),
       this.supabase.client
         .from('products')
-        .select('*')
+        .select(select)
         .eq('is_active', true)
         .eq('is_featured', true)
         .limit(8),
+      this.supabase.client
+        .from('products')
+        .select(select)
+        .eq('is_active', true)
+        .not('compare_at_price', 'is', null)
+        .limit(4),
     ]);
 
     this.banners.set((banners.data as Banner[]) ?? []);
     this.featured.set((featured.data as Product[]) ?? []);
+    this.onSale.set((onSale.data as Product[]) ?? []);
     this.loading.set(false);
-  }
-
-  protected priceBRL(value: number): string {
-    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 }

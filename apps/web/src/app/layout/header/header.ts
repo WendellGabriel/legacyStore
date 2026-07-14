@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
@@ -19,6 +19,14 @@ interface NavItem {
 export class Header {
   protected readonly auth = inject(AuthService);
   protected readonly theme = inject(ThemeService);
+  private readonly router = inject(Router);
+
+  /** Navega para a página de busca com o termo digitado. */
+  search(term: string): void {
+    const q = term.trim();
+    if (!q) return;
+    void this.router.navigate(['/busca'], { queryParams: { q } });
+  }
 
   // Categorias-raiz (por jogo). Depois serão carregadas do Supabase.
   protected readonly games: NavItem[] = [
