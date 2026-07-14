@@ -1,12 +1,12 @@
 @use '@angular/material' as mat;
 
-// Tema Material 3 — cores da marca (violeta/índigo) ------------------
+// Tema Material 3 — cores da marca LEGACY (azul royal + ciano) -------
 html {
   color-scheme: light;
   @include mat.theme(
     (
       color: (
-        primary: mat.$violet-palette,
+        primary: mat.$azure-palette,
         tertiary: mat.$cyan-palette,
       ),
       typography: Roboto,

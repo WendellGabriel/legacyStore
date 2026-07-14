@@ -3,16 +3,14 @@
   <div class="mx-auto max-w-7xl px-4">
     <div class="flex h-16 items-center gap-4">
       <!-- Logo -->
-      <a routerLink="/" class="flex items-center gap-2 shrink-0">
-        <span class="grid h-9 w-9 place-items-center rounded-lg bg-indigo-600 text-white font-black">L</span>
-        <span class="text-lg font-extrabold tracking-tight text-neutral-900 dark:text-white">
-          legacy<span class="text-indigo-600">Store</span>
-        </span>
+      <a routerLink="/" class="flex items-center shrink-0" aria-label="legacyStore — página inicial">
+        <img src="/brand/logo-full.png" alt="LEGACY" class="h-9 w-auto block dark:hidden" />
+        <img src="/brand/logo-cyan.png" alt="LEGACY" class="h-9 w-auto hidden dark:block" />
       </a>
 
       <!-- Busca -->
       <div class="hidden md:flex flex-1 max-w-xl">
-        <div class="flex w-full items-center rounded-full border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-4 py-2 focus-within:ring-2 focus-within:ring-indigo-500">
+        <div class="flex w-full items-center rounded-full border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 px-4 py-2 focus-within:ring-2 focus-within:ring-brand">
           <mat-icon class="text-neutral-400 !h-5 !w-5 !text-xl">search</mat-icon>
           <input
             type="search"
@@ -64,7 +62,7 @@
           <li>
             <a
               [routerLink]="['/c', game.slug]"
-              routerLinkActive="bg-indigo-600 text-white"
+              routerLinkActive="bg-brand text-white"
               class="block whitespace-nowrap rounded-full px-4 py-1.5 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors"
             >
               {{ game.label }}

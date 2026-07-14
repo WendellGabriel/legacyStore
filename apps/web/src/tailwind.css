@@ -2,3 +2,11 @@
 
 /* Dark mode acionado pela classe .dark no <html> (alternado pelo ThemeService) */
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Paleta da marca LEGACY — extraída da logo -------------------------- */
+@theme {
+  --color-brand: #1e5fd8;        /* azul royal (primária) */
+  --color-brand-dark: #14308f;   /* navy (fim do gradiente) */
+  --color-brand-mid: #2a8fe0;    /* azul brilhante (meio) */
+  --color-brand-light: #90e0f3;  /* ciano gelo (destaque) */
+}
