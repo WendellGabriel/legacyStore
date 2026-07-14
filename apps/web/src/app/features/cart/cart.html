@@ -62,16 +62,16 @@
 
           <!-- cupom -->
           <div>
-            @if (appliedCoupon(); as c) {
+            @if (cart.couponCode(); as code) {
               <div class="flex items-center justify-between rounded-lg bg-green-50 dark:bg-green-950/40 px-3 py-2 text-sm">
-                <span class="font-medium text-green-700 dark:text-green-300">Cupom {{ c.code }} aplicado</span>
+                <span class="font-medium text-green-700 dark:text-green-300">Cupom {{ code }} aplicado</span>
                 <button (click)="removeCoupon()" class="text-green-700 dark:text-green-300 hover:underline">remover</button>
               </div>
             } @else {
               <div class="flex gap-2">
                 <input
-                  [ngModel]="couponCode()"
-                  (ngModelChange)="couponCode.set($event)"
+                  [ngModel]="couponInput()"
+                  (ngModelChange)="couponInput.set($event)"
                   placeholder="Cupom de desconto"
                   class="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand"
                 />
@@ -90,16 +90,16 @@
             <div class="flex justify-between text-neutral-600 dark:text-neutral-300">
               <span>Subtotal</span><span>{{ cart.subtotal() | brl }}</span>
             </div>
-            @if (discount() > 0) {
+            @if (cart.couponDiscount() > 0) {
               <div class="flex justify-between text-green-600">
-                <span>Desconto</span><span>- {{ discount() | brl }}</span>
+                <span>Desconto</span><span>- {{ cart.couponDiscount() | brl }}</span>
               </div>
             }
             <div class="flex justify-between text-neutral-500">
               <span>Frete</span><span>calculado no checkout</span>
             </div>
             <div class="flex justify-between border-t border-neutral-200 dark:border-neutral-800 pt-2 text-base font-bold text-neutral-900 dark:text-white">
-              <span>Total</span><span>{{ total() | brl }}</span>
+              <span>Total</span><span>{{ cart.total() | brl }}</span>
             </div>
           </div>
 

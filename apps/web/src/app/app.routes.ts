@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { Home } from './features/home/home';
+import { authGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
   { path: '', component: Home, title: 'legacyStore — Trading Card Games' },
@@ -62,6 +63,20 @@ export const routes: Routes = [
     title: 'Lista de desejos — legacyStore',
   },
 
-  // As rotas de checkout, conta e admin entram nas próximas fases.
+  // Checkout (requer login)
+  {
+    path: 'checkout',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/checkout/checkout').then((m) => m.Checkout),
+    title: 'Finalizar compra — legacyStore',
+  },
+  {
+    path: 'pedido/:orderNumber',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/checkout/confirmation').then((m) => m.Confirmation),
+    title: 'Pedido — legacyStore',
+  },
+
+  // As rotas de conta e admin entram nas próximas fases.
   { path: '**', redirectTo: '' },
 ];

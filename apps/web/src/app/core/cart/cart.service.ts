@@ -3,6 +3,7 @@ import type { Product } from '@legacystore/shared';
 import { SupabaseService } from '../supabase/supabase.service';
 
 const STORAGE_KEY = 'legacystore-cart';
+const COUPON_KEY = 'legacystore-coupon';
 
 interface StoredItem {
   productId: string;
@@ -34,10 +35,53 @@ export class CartService {
   );
   readonly isEmpty = computed(() => this.lines().length === 0);
 
+  /** Resolve quando o carrinho terminou de hidratar do Supabase. */
+  private resolveReady!: () => void;
+  readonly whenReady = new Promise<void>((resolve) => (this.resolveReady = resolve));
+
+  // Cupom (persistido; revalidado autoritativamente pela RPC no pedido)
+  readonly couponCode = signal<string | null>(localStorage.getItem(COUPON_KEY));
+  readonly couponDiscount = signal(0);
+  readonly total = computed(() => Math.max(0, this.subtotal() - this.couponDiscount()));
+
   constructor() {
     // persiste sempre que o conteúdo muda
     effect(() => localStorage.setItem(STORAGE_KEY, JSON.stringify(this.stored())));
+    effect(() => {
+      const code = this.couponCode();
+      if (code) localStorage.setItem(COUPON_KEY, code);
+      else localStorage.removeItem(COUPON_KEY);
+    });
     void this.hydrate();
+  }
+
+  /** Valida um cupom via RPC e aplica o desconto. Retorna erro se inválido. */
+  async applyCoupon(code: string): Promise<string | null> {
+    const trimmed = code.trim();
+    if (!trimmed) return 'Informe um cupom';
+    const { data, error } = await this.supabase.client.rpc('validate_coupon', {
+      p_code: trimmed,
+      p_order_total: this.subtotal(),
+    });
+    const result = data as { valid: boolean; reason?: string; discount?: number } | null;
+    if (error || !result?.valid) {
+      this.clearCoupon();
+      return result?.reason ?? 'Cupom inválido';
+    }
+    this.couponCode.set(trimmed);
+    this.couponDiscount.set(result.discount ?? 0);
+    return null;
+  }
+
+  /** Revalida o cupom salvo (ex.: ao abrir o checkout). */
+  async revalidateCoupon(): Promise<void> {
+    const code = this.couponCode();
+    if (code) await this.applyCoupon(code);
+  }
+
+  clearCoupon(): void {
+    this.couponCode.set(null);
+    this.couponDiscount.set(0);
   }
 
   private read(): StoredItem[] {
@@ -63,6 +107,8 @@ export class CartService {
     }
 
     this.rebuild();
+    this.resolveReady();
+    void this.revalidateCoupon();
   }
 
   private rebuild(): void {
@@ -108,6 +154,7 @@ export class CartService {
 
   clear(): void {
     this.stored.set([]);
+    this.clearCoupon();
     this.rebuild();
   }
 
