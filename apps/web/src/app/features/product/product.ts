@@ -5,6 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
 import type { Product as ProductModel } from '@legacystore/shared';
 import { CatalogService } from '../catalog/catalog.service';
 import { RecentlyViewedService } from '../../core/recently-viewed/recently-viewed.service';
+import { CartService } from '../../core/cart/cart.service';
+import { WishlistService } from '../../core/wishlist/wishlist.service';
 import { ProductCard } from '../../shared/ui/product-card/product-card';
 import { BrlPipe } from '../../shared/pipes/brl.pipe';
 
@@ -16,9 +18,12 @@ import { BrlPipe } from '../../shared/pipes/brl.pipe';
 export class Product {
   private readonly service = inject(CatalogService);
   private readonly recently = inject(RecentlyViewedService);
+  protected readonly cart = inject(CartService);
+  protected readonly wishlist = inject(WishlistService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
+  protected readonly addedFeedback = signal(false);
   protected readonly loading = signal(true);
   protected readonly product = signal<ProductModel | null>(null);
   protected readonly related = signal<ProductModel[]>([]);
@@ -82,8 +87,15 @@ export class Product {
   }
 
   protected addToCart(): void {
-    // Carrinho entra na Fase 3. Placeholder por enquanto.
-    // TODO(fase-3): integrar com CartService.
-    console.info('add to cart', this.product()?.id, this.quantity());
+    const p = this.product();
+    if (!p) return;
+    this.cart.add(p, this.quantity());
+    this.addedFeedback.set(true);
+    setTimeout(() => this.addedFeedback.set(false), 2000);
+  }
+
+  protected toggleWishlist(): void {
+    const p = this.product();
+    if (p) this.wishlist.toggle(p.id);
   }
 }

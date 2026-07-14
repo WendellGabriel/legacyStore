@@ -28,12 +28,18 @@
           <mat-icon>{{ theme.theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
         </button>
 
-        <a mat-icon-button routerLink="/lista-de-desejos" aria-label="Lista de desejos">
+        <a mat-icon-button routerLink="/lista-de-desejos" aria-label="Lista de desejos" class="!relative">
           <mat-icon>favorite_border</mat-icon>
+          @if (wishlist.count() > 0) {
+            <span class="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-brand px-1 text-[10px] font-bold leading-none text-white">{{ wishlist.count() }}</span>
+          }
         </a>
 
-        <a mat-icon-button routerLink="/carrinho" aria-label="Carrinho">
+        <a mat-icon-button routerLink="/carrinho" aria-label="Carrinho" class="!relative">
           <mat-icon>shopping_cart</mat-icon>
+          @if (cart.count() > 0) {
+            <span class="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-brand px-1 text-[10px] font-bold leading-none text-white">{{ cart.count() }}</span>
+          }
         </a>
 
         <!-- Conta -->

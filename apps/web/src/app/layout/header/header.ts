@@ -5,6 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
+import { CartService } from '../../core/cart/cart.service';
+import { WishlistService } from '../../core/wishlist/wishlist.service';
 
 interface NavItem {
   label: string;
@@ -19,6 +21,8 @@ interface NavItem {
 export class Header {
   protected readonly auth = inject(AuthService);
   protected readonly theme = inject(ThemeService);
+  protected readonly cart = inject(CartService);
+  protected readonly wishlist = inject(WishlistService);
   private readonly router = inject(Router);
 
   /** Navega para a página de busca com o termo digitado. */

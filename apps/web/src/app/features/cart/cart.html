@@ -1,0 +1,114 @@
+<div class="mx-auto max-w-6xl px-4 py-8">
+  <h1 class="text-2xl font-bold text-neutral-900 dark:text-white">Meu carrinho</h1>
+
+  @if (cart.isEmpty()) {
+    <div class="mt-8 grid place-items-center rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700 py-20 text-center">
+      <mat-icon class="!h-14 !w-14 !text-6xl text-neutral-300">shopping_cart</mat-icon>
+      <p class="mt-4 text-neutral-500">Seu carrinho está vazio.</p>
+      <a routerLink="/produtos" mat-flat-button color="primary" class="!mt-4 !rounded-xl">
+        Explorar produtos
+      </a>
+    </div>
+  } @else {
+    <div class="mt-6 grid gap-8 lg:grid-cols-3">
+      <!-- Itens -->
+      <div class="lg:col-span-2 space-y-3">
+        @for (line of cart.lines(); track line.product.id) {
+          <div class="flex gap-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4">
+            <a [routerLink]="['/p', line.product.slug]" class="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-800">
+              @if (line.product.images?.[0]?.url; as url) {
+                <img [src]="url" [alt]="line.product.name" class="h-full w-full object-cover" />
+              } @else {
+                <div class="grid h-full w-full place-items-center text-3xl text-neutral-300">🃏</div>
+              }
+            </a>
+
+            <div class="flex flex-1 flex-col">
+              <a [routerLink]="['/p', line.product.slug]" class="line-clamp-2 text-sm font-medium text-neutral-800 dark:text-neutral-100 hover:text-brand">
+                {{ line.product.name }}
+              </a>
+              <span class="mt-1 text-xs text-neutral-400">SKU: {{ line.product.sku }}</span>
+
+              <div class="mt-auto flex items-center justify-between">
+                <!-- quantidade -->
+                <div class="flex items-center rounded-lg border border-neutral-300 dark:border-neutral-700">
+                  <button (click)="cart.setQuantity(line.product.id, line.quantity - 1)" class="grid h-8 w-8 place-items-center text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800" aria-label="Diminuir">
+                    <mat-icon class="!h-4 !w-4 !text-lg">remove</mat-icon>
+                  </button>
+                  <span class="w-8 text-center text-sm font-semibold text-neutral-900 dark:text-white">{{ line.quantity }}</span>
+                  <button (click)="cart.setQuantity(line.product.id, line.quantity + 1)" [disabled]="line.quantity >= line.product.stock_quantity" class="grid h-8 w-8 place-items-center text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-40" aria-label="Aumentar">
+                    <mat-icon class="!h-4 !w-4 !text-lg">add</mat-icon>
+                  </button>
+                </div>
+
+                <div class="flex items-center gap-4">
+                  <span class="font-bold text-neutral-900 dark:text-white">{{ line.product.price * line.quantity | brl }}</span>
+                  <button (click)="cart.remove(line.product.id)" class="text-neutral-400 hover:text-red-600" aria-label="Remover">
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <button (click)="cart.clear()" class="text-sm text-neutral-500 hover:text-red-600">Esvaziar carrinho</button>
+      </div>
+
+      <!-- Resumo -->
+      <aside class="lg:col-span-1">
+        <div class="sticky top-24 space-y-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+          <h2 class="font-semibold text-neutral-900 dark:text-white">Resumo</h2>
+
+          <!-- cupom -->
+          <div>
+            @if (appliedCoupon(); as c) {
+              <div class="flex items-center justify-between rounded-lg bg-green-50 dark:bg-green-950/40 px-3 py-2 text-sm">
+                <span class="font-medium text-green-700 dark:text-green-300">Cupom {{ c.code }} aplicado</span>
+                <button (click)="removeCoupon()" class="text-green-700 dark:text-green-300 hover:underline">remover</button>
+              </div>
+            } @else {
+              <div class="flex gap-2">
+                <input
+                  [ngModel]="couponCode()"
+                  (ngModelChange)="couponCode.set($event)"
+                  placeholder="Cupom de desconto"
+                  class="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand"
+                />
+                <button (click)="applyCoupon()" [disabled]="couponLoading()" class="rounded-lg bg-neutral-900 dark:bg-neutral-700 px-4 text-sm font-medium text-white disabled:opacity-50">
+                  Aplicar
+                </button>
+              </div>
+              @if (couponError()) {
+                <p class="mt-1 text-xs text-red-600">{{ couponError() }}</p>
+              }
+            }
+          </div>
+
+          <!-- totais -->
+          <div class="space-y-2 border-t border-neutral-200 dark:border-neutral-800 pt-4 text-sm">
+            <div class="flex justify-between text-neutral-600 dark:text-neutral-300">
+              <span>Subtotal</span><span>{{ cart.subtotal() | brl }}</span>
+            </div>
+            @if (discount() > 0) {
+              <div class="flex justify-between text-green-600">
+                <span>Desconto</span><span>- {{ discount() | brl }}</span>
+              </div>
+            }
+            <div class="flex justify-between text-neutral-500">
+              <span>Frete</span><span>calculado no checkout</span>
+            </div>
+            <div class="flex justify-between border-t border-neutral-200 dark:border-neutral-800 pt-2 text-base font-bold text-neutral-900 dark:text-white">
+              <span>Total</span><span>{{ total() | brl }}</span>
+            </div>
+          </div>
+
+          <button mat-flat-button color="primary" class="!h-12 !w-full !rounded-xl" routerLink="/checkout">
+            Finalizar compra
+          </button>
+          <a routerLink="/produtos" class="block text-center text-sm text-brand hover:underline">Continuar comprando</a>
+        </div>
+      </aside>
+    </div>
+  }
+</div>

@@ -50,6 +50,18 @@ export const routes: Routes = [
     title: 'Produto — legacyStore',
   },
 
-  // As rotas de carrinho, conta e admin entram nas próximas fases.
+  // Carrinho e lista de desejos (lazy loaded)
+  {
+    path: 'carrinho',
+    loadComponent: () => import('./features/cart/cart').then((m) => m.Cart),
+    title: 'Carrinho — legacyStore',
+  },
+  {
+    path: 'lista-de-desejos',
+    loadComponent: () => import('./features/wishlist/wishlist').then((m) => m.Wishlist),
+    title: 'Lista de desejos — legacyStore',
+  },
+
+  // As rotas de checkout, conta e admin entram nas próximas fases.
   { path: '**', redirectTo: '' },
 ];

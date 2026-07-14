@@ -12,6 +12,17 @@
     }
   </div>
 
+  <!-- Wishlist -->
+  <button
+    (click)="toggleWishlist($event)"
+    class="absolute right-2 top-2 z-10 grid h-8 w-8 place-items-center rounded-full bg-white/90 dark:bg-neutral-800/90 shadow-sm transition hover:scale-110"
+    [attr.aria-label]="'Lista de desejos'"
+  >
+    <mat-icon class="!h-5 !w-5 !text-xl" [class]="wishlist.has(product().id) ? 'text-brand' : 'text-neutral-400'">
+      {{ wishlist.has(product().id) ? 'favorite' : 'favorite_border' }}
+    </mat-icon>
+  </button>
+
   <!-- Imagem -->
   <div class="aspect-square overflow-hidden bg-neutral-100 dark:bg-neutral-800">
     @if (image(); as url) {
@@ -33,10 +44,21 @@
       {{ product().name }}
     </h3>
     <div class="mt-auto pt-3">
-      <div class="flex items-baseline gap-2">
-        <span class="text-lg font-bold text-neutral-900 dark:text-white">{{ product().price | brl }}</span>
-        @if (discount()) {
-          <span class="text-xs text-neutral-400 line-through">{{ product().compare_at_price | brl }}</span>
+      <div class="flex items-end justify-between gap-2">
+        <div class="flex flex-col">
+          @if (discount()) {
+            <span class="text-xs text-neutral-400 line-through">{{ product().compare_at_price | brl }}</span>
+          }
+          <span class="text-lg font-bold text-neutral-900 dark:text-white">{{ product().price | brl }}</span>
+        </div>
+        @if (!outOfStock()) {
+          <button
+            (click)="addToCart($event)"
+            class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand text-white shadow-sm transition hover:bg-brand-dark"
+            [attr.aria-label]="'Adicionar ao carrinho'"
+          >
+            <mat-icon class="!h-5 !w-5 !text-xl">add_shopping_cart</mat-icon>
+          </button>
         }
       </div>
     </div>

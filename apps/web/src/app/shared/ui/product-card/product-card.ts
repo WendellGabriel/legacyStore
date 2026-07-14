@@ -1,15 +1,21 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 import type { Product } from '@legacystore/shared';
 import { BrlPipe } from '../../pipes/brl.pipe';
+import { CartService } from '../../../core/cart/cart.service';
+import { WishlistService } from '../../../core/wishlist/wishlist.service';
 
 @Component({
   selector: 'app-product-card',
-  imports: [RouterLink, BrlPipe],
+  imports: [RouterLink, MatIconModule, BrlPipe],
   templateUrl: './product-card.html',
 })
 export class ProductCard {
   readonly product = input.required<Product>();
+
+  protected readonly cart = inject(CartService);
+  protected readonly wishlist = inject(WishlistService);
 
   protected readonly image = computed(() => {
     const imgs = this.product().images ?? [];
@@ -24,4 +30,16 @@ export class ProductCard {
   });
 
   protected readonly outOfStock = computed(() => this.product().stock_quantity <= 0);
+
+  protected addToCart(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.cart.add(this.product(), 1);
+  }
+
+  protected toggleWishlist(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.wishlist.toggle(this.product().id);
+  }
 }
