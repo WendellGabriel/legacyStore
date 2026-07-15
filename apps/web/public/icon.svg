@@ -4,9 +4,13 @@
       <stop offset="0" stop-color="#2a8fe0"/>
       <stop offset="1" stop-color="#14308f"/>
     </linearGradient>
+    <linearGradient id="bolt" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#d7f4ff"/>
+      <stop offset="1" stop-color="#7fdcf5"/>
+    </linearGradient>
   </defs>
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
-  <!-- raio estilizado (motivo LEGACY) -->
-  <path d="M300 96 L150 288 L248 288 L212 416 L372 208 L268 208 Z"
-        fill="#90e0f3" stroke="#ffffff" stroke-width="10" stroke-linejoin="round"/>
+  <rect width="512" height="512" rx="116" fill="url(#bg)"/>
+  <!-- "L" em forma de raio (estilo LEGACY: angular, spiky) -->
+  <path d="M170 112 L278 92 L244 212 L304 226 L240 248 L256 318 L402 318 L372 416 L146 416 Z"
+        fill="url(#bolt)" stroke="#ffffff" stroke-width="12" stroke-linejoin="miter" stroke-miterlimit="6"/>
 </svg>
