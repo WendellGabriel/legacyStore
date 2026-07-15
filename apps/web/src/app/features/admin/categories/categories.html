@@ -1,0 +1,50 @@
+<div class="flex items-center justify-between">
+  <h1 class="text-2xl font-bold text-neutral-900 dark:text-white">Categorias</h1>
+  @if (!showForm()) {
+    <button (click)="openNew()" class="inline-flex items-center gap-1 rounded-xl bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"><mat-icon class="!h-5 !w-5 !text-xl">add</mat-icon> Nova</button>
+  }
+</div>
+
+@if (showForm()) {
+  <div class="mt-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6">
+    <h2 class="text-sm font-semibold text-neutral-900 dark:text-white">{{ editing() ? 'Editar' : 'Nova' }} categoria</h2>
+    <div class="mt-4 grid gap-3 sm:grid-cols-2">
+      <input [ngModel]="name()" (ngModelChange)="onName($event)" placeholder="Nome" class="rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand" />
+      <input [ngModel]="slug()" (ngModelChange)="slug.set($event)" placeholder="Slug" class="rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand" />
+      <select [ngModel]="parentId()" (ngModelChange)="parentId.set($event)" class="rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm">
+        <option value="">— categoria raiz —</option>
+        @for (c of items(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+      </select>
+      <input type="number" [ngModel]="position()" (ngModelChange)="position.set($event)" placeholder="Posição" class="rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm" />
+      <label class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300"><input type="checkbox" [ngModel]="isActive()" (ngModelChange)="isActive.set($event)" class="h-4 w-4 accent-[var(--color-brand)]" /> Ativa</label>
+    </div>
+    <div class="mt-4 flex gap-2">
+      <button (click)="save()" class="rounded-xl bg-brand px-5 py-2 text-sm font-medium text-white hover:bg-brand-dark">Salvar</button>
+      <button (click)="showForm.set(false)" class="rounded-xl border border-neutral-300 dark:border-neutral-700 px-5 py-2 text-sm">Cancelar</button>
+    </div>
+  </div>
+} @else {
+  <div class="mt-4 overflow-x-auto rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+    @if (loading()) {
+      <div class="space-y-2 p-4">@for (i of [1,2,3]; track i) { <div class="h-10 animate-pulse rounded bg-neutral-200 dark:bg-neutral-800"></div> }</div>
+    } @else {
+      <table class="w-full text-sm">
+        <thead class="border-b border-neutral-200 dark:border-neutral-800 text-left text-xs uppercase text-neutral-400"><tr><th class="p-3">Nome</th><th class="p-3">Slug</th><th class="p-3">Pai</th><th class="p-3">Ativa</th><th class="p-3"></th></tr></thead>
+        <tbody>
+          @for (c of items(); track c.id) {
+            <tr class="border-b border-neutral-100 dark:border-neutral-800/50 last:border-0">
+              <td class="p-3 font-medium text-neutral-800 dark:text-neutral-100">{{ c.name }}</td>
+              <td class="p-3 text-neutral-500">{{ c.slug }}</td>
+              <td class="p-3 text-neutral-500">{{ parentName(c.parent_id) }}</td>
+              <td class="p-3">{{ c.is_active ? '✓' : '—' }}</td>
+              <td class="p-3 text-right">
+                <button (click)="openEdit(c)" class="mr-1 text-brand hover:underline text-xs">Editar</button>
+                <button (click)="remove(c)" class="text-red-600 hover:underline text-xs">Excluir</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}

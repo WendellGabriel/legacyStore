@@ -147,7 +147,34 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/stock/stock').then((m) => m.Stock),
         title: 'Estoque — Admin',
       },
-      // categorias, banners, cupons, frete e clientes entram na sequência
+      {
+        path: 'categorias',
+        loadComponent: () =>
+          import('./features/admin/categories/categories').then((m) => m.Categories),
+        title: 'Categorias — Admin',
+      },
+      {
+        path: 'banners',
+        loadComponent: () => import('./features/admin/banners/banners').then((m) => m.Banners),
+        title: 'Banners — Admin',
+      },
+      {
+        path: 'cupons',
+        loadComponent: () => import('./features/admin/coupons/coupons').then((m) => m.Coupons),
+        title: 'Cupons — Admin',
+      },
+      {
+        path: 'frete',
+        loadComponent: () =>
+          import('./features/admin/shipping/shipping-zones').then((m) => m.ShippingZones),
+        title: 'Zonas de frete — Admin',
+      },
+      {
+        path: 'clientes',
+        loadComponent: () =>
+          import('./features/admin/customers/customers').then((m) => m.Customers),
+        title: 'Clientes — Admin',
+      },
       { path: '**', redirectTo: '' },
     ],
   },

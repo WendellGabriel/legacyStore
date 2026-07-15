@@ -1,0 +1,45 @@
+<div class="flex items-center justify-between">
+  <h1 class="text-2xl font-bold text-neutral-900 dark:text-white">Banners</h1>
+  @if (!showForm()) {
+    <button (click)="openNew()" class="inline-flex items-center gap-1 rounded-xl bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"><mat-icon class="!h-5 !w-5 !text-xl">add</mat-icon> Novo</button>
+  }
+</div>
+
+@if (showForm()) {
+  <div class="mt-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6">
+    <div class="grid gap-3">
+      <input [ngModel]="title()" (ngModelChange)="title.set($event)" placeholder="Título (opcional)" class="rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand" />
+      <input [ngModel]="imageUrl()" (ngModelChange)="imageUrl.set($event)" placeholder="URL da imagem" class="rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand" />
+      <input [ngModel]="linkUrl()" (ngModelChange)="linkUrl.set($event)" placeholder="Link ao clicar (ex.: /c/pokemon)" class="rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand" />
+      <div class="flex items-center gap-4">
+        <input type="number" [ngModel]="position()" (ngModelChange)="position.set($event)" placeholder="Posição" class="w-28 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm" />
+        <label class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300"><input type="checkbox" [ngModel]="isActive()" (ngModelChange)="isActive.set($event)" class="h-4 w-4 accent-[var(--color-brand)]" /> Ativo</label>
+      </div>
+      @if (imageUrl()) { <img [src]="imageUrl()" class="mt-2 max-h-40 rounded-xl object-cover" /> }
+    </div>
+    <div class="mt-4 flex gap-2">
+      <button (click)="save()" class="rounded-xl bg-brand px-5 py-2 text-sm font-medium text-white hover:bg-brand-dark">Salvar</button>
+      <button (click)="showForm.set(false)" class="rounded-xl border border-neutral-300 dark:border-neutral-700 px-5 py-2 text-sm">Cancelar</button>
+    </div>
+  </div>
+} @else {
+  @if (loading()) {
+    <div class="mt-4 space-y-2">@for (i of [1,2]; track i) { <div class="h-24 animate-pulse rounded-xl bg-neutral-200 dark:bg-neutral-800"></div> }</div>
+  } @else if (items().length === 0) {
+    <p class="mt-6 rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700 p-12 text-center text-neutral-500">Nenhum banner.</p>
+  } @else {
+    <div class="mt-4 space-y-3">
+      @for (b of items(); track b.id) {
+        <div class="flex items-center gap-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3">
+          <img [src]="b.image_url" class="h-16 w-28 shrink-0 rounded-lg object-cover" />
+          <div class="flex-1 text-sm">
+            <p class="font-medium text-neutral-800 dark:text-neutral-100">{{ b.title || '(sem título)' }}</p>
+            <p class="text-neutral-500">{{ b.link_url || '—' }} · pos {{ b.position }} · {{ b.is_active ? 'ativo' : 'inativo' }}</p>
+          </div>
+          <button (click)="openEdit(b)" class="text-brand hover:underline text-xs">Editar</button>
+          <button (click)="remove(b)" class="text-red-600 hover:underline text-xs">Excluir</button>
+        </div>
+      }
+    </div>
+  }
+}

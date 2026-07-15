@@ -1,0 +1,28 @@
+<h1 class="text-2xl font-bold text-neutral-900 dark:text-white">Clientes</h1>
+
+<div class="mt-4 flex items-center rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2">
+  <mat-icon class="text-neutral-400 !h-5 !w-5 !text-xl">search</mat-icon>
+  <input [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="Buscar por nome ou telefone..." class="ml-2 w-full bg-transparent text-sm outline-none text-neutral-800 dark:text-neutral-100" />
+</div>
+
+<div class="mt-4 overflow-x-auto rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+  @if (loading()) {
+    <div class="space-y-2 p-4">@for (i of [1,2,3]; track i) { <div class="h-10 animate-pulse rounded bg-neutral-200 dark:bg-neutral-800"></div> }</div>
+  } @else if (filtered().length === 0) {
+    <p class="p-12 text-center text-neutral-500">Nenhum cliente.</p>
+  } @else {
+    <table class="w-full text-sm">
+      <thead class="border-b border-neutral-200 dark:border-neutral-800 text-left text-xs uppercase text-neutral-400"><tr><th class="p-3">Nome</th><th class="p-3">Telefone</th><th class="p-3">CPF</th><th class="p-3">Cadastro</th></tr></thead>
+      <tbody>
+        @for (c of filtered(); track c.id) {
+          <tr class="border-b border-neutral-100 dark:border-neutral-800/50 last:border-0">
+            <td class="p-3 font-medium text-neutral-800 dark:text-neutral-100">{{ c.full_name || '—' }}</td>
+            <td class="p-3 text-neutral-500">{{ c.phone || '—' }}</td>
+            <td class="p-3 text-neutral-500">{{ c.cpf || '—' }}</td>
+            <td class="p-3 text-neutral-500">{{ date(c.created_at) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
