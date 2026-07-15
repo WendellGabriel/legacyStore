@@ -4,5 +4,15 @@
   "installCommand": "pnpm install || true",
   "buildCommand": "pnpm --filter web build",
   "outputDirectory": "apps/web/dist/web/browser",
-  "rewrites": [{ "source": "/((?!api).*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://oratzgtadilcozstexec.supabase.co/functions/v1/store-api/sitemap.xml"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "https://oratzgtadilcozstexec.supabase.co/functions/v1/store-api/$1"
+    },
+    { "source": "/((?!api).*)", "destination": "/index.html" }
+  ]
 }
