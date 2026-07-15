@@ -1,0 +1,42 @@
+<h1 class="text-2xl font-bold text-neutral-900 dark:text-white">Controle de estoque</h1>
+<p class="mt-1 text-sm text-neutral-500">Reposição manual e ajustes. Cada alteração gera uma movimentação.</p>
+
+<div class="mt-4 overflow-x-auto rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+  @if (loading()) {
+    <div class="space-y-2 p-4">@for (i of [1,2,3,4]; track i) { <div class="h-12 animate-pulse rounded-lg bg-neutral-200 dark:bg-neutral-800"></div> }</div>
+  } @else {
+    <table class="w-full text-sm">
+      <thead class="border-b border-neutral-200 dark:border-neutral-800 text-left text-xs uppercase text-neutral-400">
+        <tr><th class="p-3">Produto</th><th class="p-3">SKU</th><th class="p-3">Estoque</th><th class="p-3"></th></tr>
+      </thead>
+      <tbody>
+        @for (p of products(); track p.id) {
+          <tr class="border-b border-neutral-100 dark:border-neutral-800/50 last:border-0">
+            <td class="p-3 font-medium text-neutral-800 dark:text-neutral-100">{{ p.name }}</td>
+            <td class="p-3 text-neutral-500">{{ p.sku }}</td>
+            <td class="p-3">
+              <span class="inline-flex items-center gap-1 font-semibold"
+                [class]="level(p) === 'out' ? 'text-red-600' : level(p) === 'low' ? 'text-amber-600' : 'text-green-600'">
+                @if (level(p) === 'out') { <mat-icon class="!h-4 !w-4 !text-base">error</mat-icon> }
+                @else if (level(p) === 'low') { <mat-icon class="!h-4 !w-4 !text-base">warning</mat-icon> }
+                {{ p.stock_quantity }}
+              </span>
+            </td>
+            <td class="p-3 text-right">
+              @if (editing() === p.id) {
+                <div class="flex items-center justify-end gap-2">
+                  <input type="number" [ngModel]="delta()" (ngModelChange)="delta.set($event)" placeholder="+/-" class="w-20 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2 py-1 text-sm" />
+                  <input [ngModel]="reason()" (ngModelChange)="reason.set($event)" placeholder="Motivo" class="w-32 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2 py-1 text-sm" />
+                  <button (click)="apply(p)" [disabled]="saving()" class="rounded-lg bg-brand px-3 py-1 text-xs font-medium text-white">OK</button>
+                  <button (click)="editing.set(null)" class="text-xs text-neutral-500">cancelar</button>
+                </div>
+              } @else {
+                <button (click)="open(p.id)" class="rounded-lg border border-neutral-300 dark:border-neutral-700 px-3 py-1 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800">Ajustar</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

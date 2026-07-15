@@ -1,0 +1,39 @@
+<h1 class="text-2xl font-bold text-neutral-900 dark:text-white">Pedidos</h1>
+
+<!-- Filtro por status -->
+<div class="mt-4 flex flex-wrap gap-2">
+  <button (click)="setFilter('')" class="rounded-full px-3 py-1 text-sm" [class]="filter() === '' ? 'bg-brand text-white' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300'">Todos</button>
+  @for (s of statuses; track s) {
+    <button (click)="setFilter(s)" class="rounded-full px-3 py-1 text-sm" [class]="filter() === s ? 'bg-brand text-white' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300'">{{ labels[s] }}</button>
+  }
+</div>
+
+<div class="mt-4 overflow-x-auto rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+  @if (loading()) {
+    <div class="space-y-2 p-4">@for (i of [1,2,3,4]; track i) { <div class="h-12 animate-pulse rounded-lg bg-neutral-200 dark:bg-neutral-800"></div> }</div>
+  } @else if (orders().length === 0) {
+    <p class="p-12 text-center text-neutral-500">Nenhum pedido.</p>
+  } @else {
+    <table class="w-full text-sm">
+      <thead class="border-b border-neutral-200 dark:border-neutral-800 text-left text-xs uppercase text-neutral-400">
+        <tr><th class="p-3">Pedido</th><th class="p-3">Data</th><th class="p-3">Cliente</th><th class="p-3">Status</th><th class="p-3">Total</th><th class="p-3"></th></tr>
+      </thead>
+      <tbody>
+        @for (o of orders(); track o.id) {
+          <tr class="border-b border-neutral-100 dark:border-neutral-800/50 last:border-0">
+            <td class="p-3 font-medium text-neutral-800 dark:text-neutral-100">{{ o.order_number }}</td>
+            <td class="p-3 text-neutral-500">{{ date(o.created_at) }}</td>
+            <td class="p-3 text-neutral-500">{{ o.customer_email }}</td>
+            <td class="p-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium" [class]="badge[o.status]">{{ labels[o.status] }}</span></td>
+            <td class="p-3 font-medium text-neutral-800 dark:text-neutral-100">{{ o.grand_total | brl }}</td>
+            <td class="p-3 text-right">
+              <a [routerLink]="['/admin/pedidos', o.order_number]" class="inline-grid h-8 w-8 place-items-center rounded-lg text-brand hover:bg-brand/10" aria-label="Gerenciar">
+                <mat-icon class="!h-5 !w-5 !text-xl">arrow_forward</mat-icon>
+              </a>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

@@ -130,7 +130,24 @@ export const routes: Routes = [
           import('./features/admin/products/product-form').then((m) => m.ProductForm),
         title: 'Produto — Admin',
       },
-      // demais seções entram na parte 2 da Fase 7
+      {
+        path: 'pedidos',
+        loadComponent: () =>
+          import('./features/admin/orders/admin-orders').then((m) => m.AdminOrders),
+        title: 'Pedidos — Admin',
+      },
+      {
+        path: 'pedidos/:orderNumber',
+        loadComponent: () =>
+          import('./features/admin/orders/admin-order-detail').then((m) => m.AdminOrderDetail),
+        title: 'Pedido — Admin',
+      },
+      {
+        path: 'estoque',
+        loadComponent: () => import('./features/admin/stock/stock').then((m) => m.Stock),
+        title: 'Estoque — Admin',
+      },
+      // categorias, banners, cupons, frete e clientes entram na sequência
       { path: '**', redirectTo: '' },
     ],
   },
