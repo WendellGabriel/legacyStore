@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "pnpm install || true",
-  "buildCommand": "cd apps/web && node ../../node_modules/@angular/cli/bin/ng.js build",
+  "buildCommand": "cd apps/web 2>/dev/null; node ../../node_modules/@angular/cli/bin/ng.js build",
   "outputDirectory": "apps/web/dist/web/browser",
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap.xml" },
