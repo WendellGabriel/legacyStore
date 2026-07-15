@@ -1,0 +1,39 @@
+@if (banners().length > 0) {
+  <div class="group relative overflow-hidden rounded-3xl bg-neutral-100 dark:bg-neutral-800">
+    <!-- Slides -->
+    <div class="flex transition-transform duration-500 ease-out" [style.transform]="'translateX(-' + current() * 100 + '%)'">
+      @for (slide of banners(); track slide.id) {
+        <div
+          class="relative w-full shrink-0"
+          [class.cursor-pointer]="!!slide.link_url"
+          (click)="navigate(slide.link_url)"
+        >
+          <div class="relative aspect-[16/7] w-full sm:aspect-[3/1]">
+            <img [src]="slide.image_url" [alt]="slide.title || 'Banner'" class="h-full w-full object-cover" />
+            @if (slide.title) {
+              <div class="absolute inset-0 flex items-end bg-gradient-to-t from-black/50 to-transparent p-6 sm:p-10">
+                <h2 class="text-xl font-black text-white drop-shadow sm:text-3xl">{{ slide.title }}</h2>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Setas e indicadores (só com mais de 1 slide) -->
+    @if (banners().length > 1) {
+      <button (click)="prev(); $event.stopPropagation()" class="absolute left-3 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/80 text-neutral-800 opacity-0 shadow transition group-hover:opacity-100 hover:bg-white" aria-label="Anterior">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <button (click)="next(); $event.stopPropagation()" class="absolute right-3 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/80 text-neutral-800 opacity-0 shadow transition group-hover:opacity-100 hover:bg-white" aria-label="Próximo">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+
+      <div class="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+        @for (slide of banners(); track slide.id; let i = $index) {
+          <button (click)="go(i); $event.stopPropagation()" class="h-2 rounded-full transition-all" [class]="current() === i ? 'w-6 bg-white' : 'w-2 bg-white/60'" [attr.aria-label]="'Ir para slide ' + (i + 1)"></button>
+        }
+      </div>
+    }
+  </div>
+}

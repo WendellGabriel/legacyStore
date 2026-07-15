@@ -77,15 +77,21 @@ export class AdminService {
   }
 
   // ---- Imagens (Supabase Storage) ----
-  async uploadImage(productId: string, file: File): Promise<string | null> {
+  /** Faz upload de um arquivo para uma pasta do bucket e retorna a URL pública. */
+  async uploadFile(folder: string, file: File): Promise<{ url?: string; error?: string }> {
     const ext = file.name.split('.').pop() ?? 'jpg';
-    const path = `${productId}/${crypto.randomUUID()}.${ext}`;
+    const path = `${folder}/${crypto.randomUUID()}.${ext}`;
     const { error } = await this.supabase.client.storage
       .from(PRODUCTS_BUCKET)
       .upload(path, file, { upsert: true });
-    if (error) return null;
+    if (error) return { error: error.message };
     const { data } = this.supabase.client.storage.from(PRODUCTS_BUCKET).getPublicUrl(path);
-    return data.publicUrl;
+    return { url: data.publicUrl };
+  }
+
+  async uploadImage(productId: string, file: File): Promise<string | null> {
+    const { url } = await this.uploadFile(productId, file);
+    return url ?? null;
   }
 
   async addProductImage(productId: string, url: string, position: number): Promise<void> {

@@ -3,10 +3,11 @@ import { RouterLink } from '@angular/router';
 import type { Banner, Product } from '@legacystore/shared';
 import { SupabaseService } from '../../core/supabase/supabase.service';
 import { ProductCard } from '../../shared/ui/product-card/product-card';
+import { Carousel } from '../../shared/ui/carousel/carousel';
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink, ProductCard],
+  imports: [RouterLink, ProductCard, Carousel],
   templateUrl: './home.html',
 })
 export class Home {

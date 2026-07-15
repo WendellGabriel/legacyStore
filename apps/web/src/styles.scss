@@ -30,3 +30,13 @@ body {
   margin: 0;
   font-family: Roboto, 'Helvetica Neue', sans-serif;
 }
+
+// Centraliza o glifo dos ícones Material dentro do seu box (evita
+// desalinhamento quando o tamanho é alterado por classes utilitárias).
+mat-icon.mat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1 !important;
+  overflow: visible;
+}

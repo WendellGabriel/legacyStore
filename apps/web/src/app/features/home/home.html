@@ -1,4 +1,12 @@
-<!-- Hero -->
+<!-- Carrossel de banners (gerenciável no admin) -->
+@if (banners().length > 0) {
+  <section class="mx-auto max-w-7xl px-4 pt-8">
+    <app-carousel [banners]="banners()" />
+  </section>
+}
+
+<!-- Hero (fallback quando não há banners) -->
+@if (banners().length === 0) {
 <section class="mx-auto max-w-7xl px-4 pt-8">
   <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-dark via-brand to-brand-mid px-8 py-16 md:px-16 md:py-24">
     <div class="relative z-10 max-w-2xl">
@@ -23,6 +31,7 @@
     <div class="pointer-events-none absolute -right-16 -top-16 h-72 w-72 rounded-full bg-white/10 blur-2xl"></div>
   </div>
 </section>
+}
 
 <!-- Produtos em destaque -->
 <section class="mx-auto max-w-7xl px-4 py-12">
