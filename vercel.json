@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm --filter web build",
+  "outputDirectory": "apps/web/dist/web/browser",
+  "rewrites": [
+    { "source": "/sitemap.xml", "destination": "/api/sitemap.xml" },
+    { "source": "/((?!api).*)", "destination": "/index.html" }
+  ]
+}

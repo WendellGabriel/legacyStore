@@ -5,6 +5,7 @@ import { combineLatest } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import type { Category, Product, ProductTypeValue } from '@legacystore/shared';
 import { CatalogService, CatalogFilters } from './catalog.service';
+import { SeoService } from '../../core/seo/seo.service';
 import { ProductCard } from '../../shared/ui/product-card/product-card';
 
 type SortOption = NonNullable<CatalogFilters['sort']>;
@@ -16,6 +17,7 @@ type SortOption = NonNullable<CatalogFilters['sort']>;
 })
 export class Catalog {
   private readonly service = inject(CatalogService);
+  private readonly seo = inject(SeoService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -92,6 +94,12 @@ export class Catalog {
     this.products.set(result.products);
     this.total.set(result.total);
     this.loading.set(false);
+
+    const heading = this.heading();
+    this.seo.update({
+      title: heading,
+      description: `${heading} — ${result.total} produto(s) na legacyStore. Boxes, cartas avulsas e acessórios de TCG.`,
+    });
   }
 
   /** Atualiza a URL (query params) — dispara o reload via subscription. */
