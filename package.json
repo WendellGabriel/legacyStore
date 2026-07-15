@@ -22,5 +22,8 @@
   "devDependencies": {
     "@angular/cli": "^22.0.6",
     "prettier": "^3.3.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["@parcel/watcher", "esbuild", "lmdb", "msgpackr-extract"]
   }
 }
