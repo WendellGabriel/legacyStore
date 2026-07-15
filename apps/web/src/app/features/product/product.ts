@@ -7,6 +7,7 @@ import { CatalogService } from '../catalog/catalog.service';
 import { RecentlyViewedService } from '../../core/recently-viewed/recently-viewed.service';
 import { CartService } from '../../core/cart/cart.service';
 import { WishlistService } from '../../core/wishlist/wishlist.service';
+import { SeoService } from '../../core/seo/seo.service';
 import { ProductCard } from '../../shared/ui/product-card/product-card';
 import { BrlPipe } from '../../shared/pipes/brl.pipe';
 
@@ -20,6 +21,7 @@ export class Product {
   private readonly recently = inject(RecentlyViewedService);
   protected readonly cart = inject(CartService);
   protected readonly wishlist = inject(WishlistService);
+  private readonly seo = inject(SeoService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -66,9 +68,14 @@ export class Product {
     }
 
     this.product.set(product);
-    this.activeImage.set(
-      [...(product.images ?? [])].sort((a, b) => a.position - b.position)[0]?.url ?? null,
-    );
+    const firstImage = [...(product.images ?? [])].sort((a, b) => a.position - b.position)[0]?.url ?? null;
+    this.activeImage.set(firstImage);
+    this.seo.update({
+      title: product.seo_title || product.name,
+      description: product.seo_description || product.description || undefined,
+      image: firstImage ?? undefined,
+      type: 'product',
+    });
     this.recently.track(product.id);
     this.loading.set(false);
 
