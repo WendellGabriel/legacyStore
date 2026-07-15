@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2a8fe0"/>
+      <stop offset="1" stop-color="#14308f"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- raio estilizado (motivo LEGACY) -->
+  <path d="M300 96 L150 288 L248 288 L212 416 L372 208 L268 208 Z"
+        fill="#90e0f3" stroke="#ffffff" stroke-width="10" stroke-linejoin="round"/>
+</svg>
