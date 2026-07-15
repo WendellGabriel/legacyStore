@@ -1,8 +1,12 @@
 packages:
   - "apps/*"
   - "packages/*"
-onlyBuiltDependencies:
-  - '@parcel/watcher'
+
+# Suprime o erro de build scripts ignorados no CI (Vercel). Esses pacotes
+# trazem binários pré-compilados via dependências opcionais, então não
+# precisam rodar node-gyp — só não devem quebrar o install.
+ignoredBuiltDependencies:
+  - "@parcel/watcher"
   - esbuild
   - lmdb
   - msgpackr-extract
