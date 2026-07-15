@@ -70,7 +70,7 @@ export class AuthService {
 
   async resetPassword(email: string) {
     return this.supabase.client.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/nova-senha`,
+      redirectTo: `${window.location.origin}/nova-senha`,
     });
   }
 
