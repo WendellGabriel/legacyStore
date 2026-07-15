@@ -2,9 +2,12 @@ packages:
   - "apps/*"
   - "packages/*"
 
-# Suprime o erro de build scripts ignorados no CI (Vercel). Esses pacotes
-# trazem binários pré-compilados via dependências opcionais, então não
-# precisam rodar node-gyp — só não devem quebrar o install.
+# Não re-verificar dependências antes de rodar scripts (ex.: "pnpm --filter
+# web build"). No CI da Vercel isso disparava um install que falhava no
+# ERR_PNPM_IGNORED_BUILDS. Config vive aqui no pnpm 11 (não mais no .npmrc).
+verifyDepsBeforeRun: false
+
+# Suprime o erro de build scripts ignorados (binários vêm de deps opcionais).
 ignoredBuiltDependencies:
   - "@parcel/watcher"
   - esbuild
