@@ -16,11 +16,22 @@ Itens a configurar/construir **após o lançamento** (o site já é funcional se
 - [ ] **Preencher `store_settings`** (via Admin ou SQL): WhatsApp real, `ga_measurement_id`
   (Google Analytics), `meta_pixel_id`, `origin_cep` (CEP da loja), `free_shipping_threshold`
 
+- [ ] **Resend (SMTP dos e-mails de autenticação)** — o e-mail embutido do Supabase
+  é só para testes (limite ~2-4/hora e cai em spam), o que **quebra o reset de senha**
+  em produção. Configurar SMTP próprio:
+  - Criar conta em [resend.com](https://resend.com) (grátis até 3k/mês) → **API key** + verificar domínio
+  - Supabase → **Authentication → SMTP Settings** → preencher com os dados do Resend
+  - Resolve: reset de senha, confirmação de cadastro e demais e-mails de auth
+  - Mesma conta Resend serve para o **e-mail transacional** (abaixo)
+  - Contexto: o bug do link de reset (localhost / rota errada) JÁ foi corrigido
+    (commit 9ca8035); o que falta é sair do e-mail embutido limitado
+  - Workaround imediato p/ redefinir senha sem e-mail: `apps/api/_setpass.mjs`
+
 ## 🟡 Melhorias planejadas
 
-- [ ] **E-mail transacional** (Resend) — enviar automaticamente:
+- [ ] **E-mail transacional** (Resend — mesma conta do SMTP acima) — enviar automaticamente:
   - Pedido recebido · Pagamento confirmado · Pedido enviado (com rastreio)
-  - Precisa: conta Resend + `RESEND_API_KEY` + verificar domínio de envio
+  - Precisa: `RESEND_API_KEY` + domínio verificado
   - Montar templates com a marca e disparo no webhook / mudança de status
 
 - [ ] **Correios (frete real)** — hoje é **estimativa por região** (o webservice
