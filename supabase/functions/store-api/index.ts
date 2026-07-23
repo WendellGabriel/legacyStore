@@ -64,6 +64,42 @@ function estimate([base, perKg]: [number, number, number], kg: number): number {
   return Math.round((base + perKg * extra) * 100) / 100;
 }
 
+interface Quote {
+  method: string;
+  service: string;
+  price: number;
+  delivery_days: number;
+  quote_id?: string | null;
+}
+
+/**
+ * Persiste cada cotação em shipping_quotes (autoritativo) e devolve com quote_id.
+ * O create_order lê o preço/prazo daí, ignorando qualquer valor do cliente (A1).
+ */
+async function persistQuotes(
+  sb: SupabaseClient,
+  cep: string,
+  items: { product_id: string; quantity: number }[],
+  quotes: Quote[],
+): Promise<Quote[]> {
+  for (const q of quotes) {
+    const { data } = await sb
+      .from('shipping_quotes')
+      .insert({
+        cep,
+        items,
+        method: q.method,
+        service: q.service,
+        price: q.price,
+        delivery_days: q.delivery_days,
+      })
+      .select('id')
+      .single();
+    q.quote_id = (data as { id: string } | null)?.id ?? null;
+  }
+  return quotes;
+}
+
 async function calculateShipping(cep: string, items: { product_id: string; quantity: number }[]) {
   const info = await lookupCep(cep);
   if (!info) return { quotes: [], destination: null };
@@ -77,13 +113,11 @@ async function calculateShipping(cep: string, items: { product_id: string; quant
         norm(z.city) === norm(info.city) && norm(z.neighborhood) === norm(info.neighborhood!),
     );
     if (match) {
-      return {
-        destination,
-        quotes: [{
-          method: 'recife_zone', service: 'Entrega local',
-          price: Number(match.price), delivery_days: match.delivery_days,
-        }],
-      };
+      const quotes: Quote[] = [{
+        method: 'recife_zone', service: 'Entrega local',
+        price: Number(match.price), delivery_days: match.delivery_days,
+      }];
+      return { destination, quotes: await persistQuotes(sb, cep, items, quotes) };
     }
   }
 
@@ -97,13 +131,11 @@ async function calculateShipping(cep: string, items: { product_id: string; quant
   const kg = Math.max(grams, 300) / 1000;
   const t = REGION_TABLE[region];
 
-  return {
-    destination,
-    quotes: [
-      { method: 'correios', service: 'PAC', price: estimate(t.pac, kg), delivery_days: t.pac[2] },
-      { method: 'correios', service: 'SEDEX', price: estimate(t.sedex, kg), delivery_days: t.sedex[2] },
-    ],
-  };
+  const quotes: Quote[] = [
+    { method: 'correios', service: 'PAC', price: estimate(t.pac, kg), delivery_days: t.pac[2] },
+    { method: 'correios', service: 'SEDEX', price: estimate(t.sedex, kg), delivery_days: t.sedex[2] },
+  ];
+  return { destination, quotes: await persistQuotes(sb, cep, items, quotes) };
 }
 
 // ---- Mercado Pago --------------------------------------------------
@@ -148,7 +180,20 @@ async function createPreference(order: {
 
 // ---- App Hono ------------------------------------------------------
 const app = new Hono().basePath('/store-api');
-app.use('*', cors());
+
+// CORS restrito à origem do site (+ localhost em dev). Endpoints não usam
+// cookies/sessão do navegador, mas evitamos expor a API a qualquer origem.
+const ALLOWED_ORIGINS = [
+  Deno.env.get('APP_BASE_URL') ?? 'https://legacy-store-web.vercel.app',
+  'http://localhost:4200',
+];
+app.use(
+  '*',
+  cors({
+    origin: (origin) => (ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]),
+    allowMethods: ['GET', 'POST', 'OPTIONS'],
+  }),
+);
 
 app.get('/health', (c) => c.json({ ok: true, service: 'legacystore-store-api' }));
 

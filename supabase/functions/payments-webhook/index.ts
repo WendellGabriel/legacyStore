@@ -10,6 +10,49 @@ import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const MP_API = 'https://api.mercadopago.com';
 
+/**
+ * Valida a assinatura HMAC do Mercado Pago (header x-signature).
+ * Manifesto: `id:<data.id>;request-id:<x-request-id>;ts:<ts>;`
+ * Retorna true se válida OU se o segredo não estiver configurado (degrada
+ * suavemente — a reconsulta do pagamento no MP continua sendo a defesa principal).
+ */
+async function verifyMpSignature(req: Request, dataId: string | null): Promise<boolean> {
+  const secret = Deno.env.get('MP_WEBHOOK_SECRET');
+  if (!secret) return true; // não configurado ainda → não bloqueia
+
+  const sig = req.headers.get('x-signature');
+  const requestId = req.headers.get('x-request-id');
+  if (!sig || !dataId) return false;
+
+  const parts = Object.fromEntries(
+    sig.split(',').map((p) => p.split('=', 2).map((s) => s.trim()) as [string, string]),
+  );
+  const ts = parts['ts'];
+  const v1 = parts['v1'];
+  if (!ts || !v1) return false;
+
+  // rejeita timestamps muito antigos (replay) — 10 min de tolerância
+  const tsMs = Number(ts) * (ts.length <= 10 ? 1000 : 1);
+  if (!Number.isFinite(tsMs) || Math.abs(Date.now() - tsMs) > 10 * 60 * 1000) return false;
+
+  const manifest = `id:${dataId.toLowerCase()};request-id:${requestId ?? ''};ts:${ts};`;
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const mac = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(manifest));
+  const expected = [...new Uint8Array(mac)].map((b) => b.toString(16).padStart(2, '0')).join('');
+
+  // comparação em tempo constante
+  if (expected.length !== v1.length) return false;
+  let diff = 0;
+  for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ v1.charCodeAt(i);
+  return diff === 0;
+}
+
 Deno.serve(async (req) => {
   try {
     const mpToken = Deno.env.get('MP_ACCESS_TOKEN');
@@ -24,6 +67,11 @@ Deno.serve(async (req) => {
       const body = await req.json().catch(() => null);
       paymentId = body?.data?.id ?? null;
       type = body?.type ?? type;
+    }
+
+    // Valida a assinatura (defesa em profundidade; só bloqueia se o segredo existir)
+    if (!(await verifyMpSignature(req, paymentId))) {
+      return new Response('assinatura inválida', { status: 401 });
     }
 
     // Só tratamos notificações de pagamento
@@ -47,7 +95,7 @@ Deno.serve(async (req) => {
 
     const { data: order } = await supabase
       .from('orders')
-      .select('id')
+      .select('id, grand_total')
       .eq('order_number', orderNumber)
       .maybeSingle();
     if (!order) return new Response('pedido não encontrado', { status: 200 });
@@ -61,7 +109,21 @@ Deno.serve(async (req) => {
       cancelled: { payment_status: 'rejected', status: 'cancelled' },
       refunded: { payment_status: 'refunded', status: 'refunded' },
     };
-    const mapped = map[payment.status] ?? { payment_status: 'pending' };
+    let mapped = map[payment.status] ?? { payment_status: 'pending' };
+
+    // M2: confere o valor pago × total do pedido antes de aprovar.
+    // Se divergir (além de 1 centavo de tolerância), NÃO marca como pago —
+    // deixa pendente para revisão manual, evitando aprovação de valor menor.
+    if (mapped.status === 'paid') {
+      const paid = Number(payment.transaction_amount);
+      const expected = Number(order.grand_total);
+      if (!Number.isFinite(paid) || Math.abs(paid - expected) > 0.01) {
+        console.warn(
+          `Valor divergente no pedido ${orderNumber}: pago=${paid} esperado=${expected}`,
+        );
+        mapped = { payment_status: 'pending' };
+      }
+    }
 
     await supabase
       .from('orders')

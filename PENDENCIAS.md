@@ -93,7 +93,10 @@ Itens a configurar/construir **após o lançamento** (o site já é funcional se
 
 ## 🔒 Segurança (overview da aplicação)
 
-- [ ] **Overview de segurança** — varredura completa da aplicação, produzindo um
+- [x] **Overview de segurança** — ✅ RELATÓRIO GERADO em `SECURITY.md` (2026-07-23).
+  Principal achado (🔴): total do pedido manipulável (frete `p_shipping_total` vindo
+  do cliente no `create_order`). Faltam as CORREÇÕES (A1/M1/M2/B4). Detalhes abaixo:
+  varredura completa da aplicação, produzindo um
   relatório com achados classificados por severidade (crítico/alto/médio/baixo) e
   correções. Cobrir, no mínimo:
   - **RLS (Postgres):** revisar as policies de **todas** as tabelas — garantir que

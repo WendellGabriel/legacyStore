@@ -210,4 +210,7 @@ export interface ShippingQuote {
   service: string;
   price: number;
   delivery_days: number;
+  // id da cotação persistida no servidor (autoritativo p/ create_order).
+  // Opcional para compatibilidade; presente quando a API já foi atualizada.
+  quote_id?: string | null;
 }
