@@ -87,4 +87,32 @@ export class AuthService {
     if (!error) await this.loadProfile();
     return { error: error?.message ?? null };
   }
+
+  /**
+   * Altera a senha do usuário logado, confirmando a senha atual antes.
+   * A confirmação é feita revalidando as credenciais (signInWithPassword),
+   * já que o Supabase permite updateUser({password}) sem exigir a senha atual.
+   */
+  async changePassword(currentPassword: string, newPassword: string) {
+    const email = this.user()?.email;
+    if (!email) return { error: 'Não autenticado' };
+
+    // 1) confirma a senha atual
+    const { error: signInError } = await this.supabase.client.auth.signInWithPassword({
+      email,
+      password: currentPassword,
+    });
+    if (signInError) return { error: 'Senha atual incorreta.' };
+
+    // 2) aplica a nova senha
+    const { error } = await this.supabase.client.auth.updateUser({ password: newPassword });
+    if (error) {
+      return {
+        error: /different from the old|new password should be/i.test(error.message)
+          ? 'A nova senha deve ser diferente da atual.'
+          : 'Não foi possível alterar a senha.',
+      };
+    }
+    return { error: null };
+  }
 }

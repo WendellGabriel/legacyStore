@@ -1,10 +1,11 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import type { Product } from '@legacystore/shared';
+import { isPreorder, type Product } from '@legacystore/shared';
 import { BrlPipe } from '../../pipes/brl.pipe';
 import { CartService } from '../../../core/cart/cart.service';
 import { WishlistService } from '../../../core/wishlist/wishlist.service';
+import { SettingsService } from '../../../core/settings/settings.service';
 
 @Component({
   selector: 'app-product-card',
@@ -16,6 +17,7 @@ export class ProductCard {
 
   protected readonly cart = inject(CartService);
   protected readonly wishlist = inject(WishlistService);
+  private readonly settings = inject(SettingsService);
 
   protected readonly image = computed(() => {
     const imgs = this.product().images ?? [];
@@ -30,6 +32,9 @@ export class ProductCard {
   });
 
   protected readonly outOfStock = computed(() => this.product().stock_quantity <= 0);
+  protected readonly preorder = computed(() =>
+    isPreorder(this.product(), this.settings.get<boolean>('auto_preorder_on_zero', false)),
+  );
 
   protected addToCart(event: Event): void {
     event.preventDefault();

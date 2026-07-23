@@ -76,6 +76,7 @@ export interface Product {
   height_cm: number | null;
   is_featured: boolean;
   is_active: boolean;
+  allow_preorder: boolean; // pré-venda manual (admin liga por produto)
   seo_title: string | null;
   seo_description: string | null;
   created_at: string;
@@ -83,6 +84,19 @@ export interface Product {
   // relações opcionais (quando carregadas via join)
   images?: ProductImage[];
   category?: Category;
+}
+
+/** Registro de interesse na pré-venda de um produto esgotado. */
+export interface ProductWaitlist {
+  id: string;
+  product_id: string;
+  user_id: string | null;
+  email: string;
+  whatsapp: string | null;
+  notified_at: string | null;
+  created_at: string;
+  // relação opcional (quando carregada via join no admin)
+  product?: Pick<Product, 'id' | 'name' | 'slug' | 'sku'>;
 }
 
 export interface ProductRelation {

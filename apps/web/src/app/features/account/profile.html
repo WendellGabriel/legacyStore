@@ -45,3 +45,101 @@
     </div>
   </form>
 </div>
+
+<div class="mt-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6">
+  <h2 class="text-lg font-semibold text-neutral-900 dark:text-white">Alterar senha</h2>
+  <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+    Confirme sua senha atual e escolha uma nova (mínimo 8 caracteres).
+  </p>
+
+  <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="mt-4 flex max-w-md flex-col gap-1">
+    <mat-form-field appearance="outline">
+      <mat-label>Senha atual</mat-label>
+      <input
+        matInput
+        formControlName="current"
+        [type]="hideCurrent() ? 'password' : 'text'"
+        autocomplete="current-password"
+      />
+      <mat-icon matPrefix>lock</mat-icon>
+      <button
+        mat-icon-button
+        matSuffix
+        type="button"
+        (click)="hideCurrent.set(!hideCurrent())"
+        [attr.aria-label]="hideCurrent() ? 'Mostrar senha' : 'Ocultar senha'"
+      >
+        <mat-icon>{{ hideCurrent() ? 'visibility' : 'visibility_off' }}</mat-icon>
+      </button>
+      @if (passwordForm.controls.current.invalid && passwordForm.controls.current.touched) {
+        <mat-error>Informe sua senha atual</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Nova senha</mat-label>
+      <input
+        matInput
+        formControlName="password"
+        [type]="hideNew() ? 'password' : 'text'"
+        autocomplete="new-password"
+      />
+      <mat-icon matPrefix>lock_reset</mat-icon>
+      <button
+        mat-icon-button
+        matSuffix
+        type="button"
+        (click)="hideNew.set(!hideNew())"
+        [attr.aria-label]="hideNew() ? 'Mostrar senha' : 'Ocultar senha'"
+      >
+        <mat-icon>{{ hideNew() ? 'visibility' : 'visibility_off' }}</mat-icon>
+      </button>
+      @if (passwordForm.controls.password.hasError('required') && passwordForm.controls.password.touched) {
+        <mat-error>Informe a nova senha</mat-error>
+      } @else if (passwordForm.controls.password.hasError('minlength') && passwordForm.controls.password.touched) {
+        <mat-error>A senha deve ter no mínimo 8 caracteres</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Confirmar nova senha</mat-label>
+      <input
+        matInput
+        formControlName="confirm"
+        [type]="hideNew() ? 'password' : 'text'"
+        autocomplete="new-password"
+      />
+      <mat-icon matPrefix>lock_reset</mat-icon>
+      @if (passwordForm.controls.confirm.invalid && passwordForm.controls.confirm.touched) {
+        <mat-error>Confirme a nova senha</mat-error>
+      }
+    </mat-form-field>
+
+    @if (passwordError()) {
+      <div class="mb-2 flex items-center gap-1 text-sm text-red-600">
+        <mat-icon class="!h-5 !w-5 !text-xl">error</mat-icon> {{ passwordError() }}
+      </div>
+    }
+
+    <div class="mt-2 flex items-center gap-3">
+      <button
+        mat-flat-button
+        color="primary"
+        type="submit"
+        [disabled]="changingPassword()"
+        class="!rounded-xl"
+      >
+        @if (changingPassword()) {
+          <mat-progress-spinner diameter="20" mode="indeterminate" />
+        } @else {
+          Alterar senha
+        }
+      </button>
+      @if (passwordSaved()) {
+        <span class="flex items-center gap-1 text-sm text-green-600">
+          <mat-icon class="!h-5 !w-5 !text-xl">check_circle</mat-icon> Senha alterada!
+        </span>
+      }
+    </div>
+  </form>
+</div>

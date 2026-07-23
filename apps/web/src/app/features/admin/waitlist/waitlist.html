@@ -1,0 +1,117 @@
+<div class="flex flex-wrap items-center justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-bold text-neutral-900 dark:text-white">Pré-venda</h1>
+    <p class="text-sm text-neutral-500 dark:text-neutral-400">
+      Interessados por produto esgotado — use para dimensionar a recompra.
+    </p>
+  </div>
+  <button
+    (click)="exportCsv()"
+    [disabled]="total() === 0"
+    class="inline-flex items-center gap-1 rounded-xl border border-neutral-300 dark:border-neutral-700 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-40"
+  >
+    <mat-icon class="!h-5 !w-5 !text-xl">download</mat-icon> Exportar CSV
+  </button>
+</div>
+
+<!-- Configuração global -->
+<div class="mt-4 flex items-center justify-between gap-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4">
+  <div>
+    <p class="font-medium text-neutral-800 dark:text-neutral-100">Pré-venda automática ao esgotar</p>
+    <p class="text-sm text-neutral-500 dark:text-neutral-400">
+      Quando ligado, todo produto que zerar o estoque entra em pré-venda automaticamente.
+      Você também pode ligar por produto na aba de edição.
+    </p>
+  </div>
+  <button
+    (click)="toggleAuto()"
+    [disabled]="savingSetting()"
+    role="switch"
+    [attr.aria-checked]="autoPreorder()"
+    class="relative h-6 w-11 shrink-0 rounded-full transition disabled:opacity-50"
+    [class]="autoPreorder() ? 'bg-brand' : 'bg-neutral-300 dark:bg-neutral-600'"
+  >
+    <span
+      class="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all"
+      [class]="autoPreorder() ? 'left-[22px]' : 'left-0.5'"
+    ></span>
+  </button>
+</div>
+
+<!-- Filtro -->
+<div class="mt-4 flex items-center gap-3">
+  <label class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+    <input type="checkbox" [checked]="onlyPending()" (change)="togglePending()" class="h-4 w-4 accent-[var(--color-brand)]" />
+    Mostrar só quem ainda não foi avisado
+  </label>
+  <span class="text-sm text-neutral-400">· {{ total() }} interessado(s)</span>
+</div>
+
+<div class="mt-4 space-y-4">
+  @if (loading()) {
+    @for (i of [1, 2]; track i) {
+      <div class="h-24 animate-pulse rounded-2xl bg-neutral-200 dark:bg-neutral-800"></div>
+    }
+  } @else if (groups().length === 0) {
+    <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-12 text-center text-neutral-500">
+      Ninguém na lista de pré-venda ainda.
+    </div>
+  } @else {
+    @for (g of groups(); track g.productId) {
+      <div class="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        <div class="flex items-center justify-between gap-3 border-b border-neutral-100 dark:border-neutral-800 p-4">
+          <div class="flex items-center gap-2">
+            @if (g.slug) {
+              <a [routerLink]="['/p', g.slug]" class="font-semibold text-neutral-900 dark:text-white hover:text-brand">{{ g.name }}</a>
+            } @else {
+              <span class="font-semibold text-neutral-900 dark:text-white">{{ g.name }}</span>
+            }
+          </div>
+          <span class="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-semibold text-brand">
+            {{ g.items.length }} interessado(s)
+          </span>
+        </div>
+        <table class="w-full text-sm">
+          <tbody>
+            @for (e of g.items; track e.id) {
+              <tr class="border-b border-neutral-100 dark:border-neutral-800/50 last:border-0" [class.opacity-50]="e.notified_at">
+                <td class="p-3">
+                  <div class="font-medium text-neutral-800 dark:text-neutral-100">{{ e.email }}</div>
+                  @if (e.whatsapp) {
+                    <div class="text-xs text-neutral-500">WhatsApp: {{ e.whatsapp }}</div>
+                  }
+                </td>
+                <td class="p-3 text-neutral-500 whitespace-nowrap">{{ date(e.created_at) }}</td>
+                <td class="p-3">
+                  @if (e.notified_at) {
+                    <span class="inline-flex items-center gap-1 text-xs font-medium text-green-600">
+                      <mat-icon class="!h-4 !w-4 !text-base">check_circle</mat-icon> Avisado
+                    </span>
+                  } @else {
+                    <span class="text-xs text-amber-600">Aguardando</span>
+                  }
+                </td>
+                <td class="p-3">
+                  <div class="flex items-center justify-end gap-1">
+                    @if (e.notified_at) {
+                      <button (click)="markNotified(e, false)" class="grid h-8 w-8 place-items-center rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800" title="Marcar como não avisado">
+                        <mat-icon class="!h-5 !w-5 !text-xl">undo</mat-icon>
+                      </button>
+                    } @else {
+                      <button (click)="markNotified(e, true)" class="grid h-8 w-8 place-items-center rounded-lg text-green-600 hover:bg-green-50 dark:hover:bg-green-950/30" title="Marcar como avisado">
+                        <mat-icon class="!h-5 !w-5 !text-xl">notifications_active</mat-icon>
+                      </button>
+                    }
+                    <button (click)="remove(e)" class="grid h-8 w-8 place-items-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30" title="Remover">
+                      <mat-icon class="!h-5 !w-5 !text-xl">delete_outline</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

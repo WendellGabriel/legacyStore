@@ -1,19 +1,31 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import type { Product as ProductModel } from '@legacystore/shared';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { isPreorder, type Product as ProductModel } from '@legacystore/shared';
 import { CatalogService } from '../catalog/catalog.service';
 import { RecentlyViewedService } from '../../core/recently-viewed/recently-viewed.service';
 import { CartService } from '../../core/cart/cart.service';
 import { WishlistService } from '../../core/wishlist/wishlist.service';
+import { WaitlistService } from '../../core/waitlist/waitlist.service';
+import { SettingsService } from '../../core/settings/settings.service';
 import { SeoService } from '../../core/seo/seo.service';
 import { ProductCard } from '../../shared/ui/product-card/product-card';
 import { BrlPipe } from '../../shared/pipes/brl.pipe';
 
 @Component({
   selector: 'app-product',
-  imports: [RouterLink, MatIconModule, MatButtonModule, ProductCard, BrlPipe],
+  imports: [
+    RouterLink,
+    ReactiveFormsModule,
+    MatIconModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    ProductCard,
+    BrlPipe,
+  ],
   templateUrl: './product.html',
 })
 export class Product {
@@ -21,9 +33,12 @@ export class Product {
   private readonly recently = inject(RecentlyViewedService);
   protected readonly cart = inject(CartService);
   protected readonly wishlist = inject(WishlistService);
+  private readonly waitlist = inject(WaitlistService);
+  private readonly settings = inject(SettingsService);
   private readonly seo = inject(SeoService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly fb = inject(FormBuilder);
 
   protected readonly addedFeedback = signal(false);
   protected readonly loading = signal(true);
@@ -32,6 +47,23 @@ export class Product {
   protected readonly recentlyViewed = signal<ProductModel[]>([]);
   protected readonly activeImage = signal<string | null>(null);
   protected readonly quantity = signal(1);
+
+  // --- pré-venda / lista de interesse ---
+  protected readonly showInterest = signal(false);
+  protected readonly interestSaving = signal(false);
+  protected readonly interestDone = signal(false);
+  protected readonly interestError = signal<string | null>(null);
+  protected readonly interestForm = this.fb.nonNullable.group({
+    email: ['', [Validators.required, Validators.email]],
+    whatsapp: [''],
+  });
+
+  protected readonly preorder = computed(() =>
+    isPreorder(
+      this.product() ?? { stock_quantity: 1, allow_preorder: false },
+      this.settings.get<boolean>('auto_preorder_on_zero', false),
+    ),
+  );
 
   protected readonly images = computed(() => {
     const p = this.product();
@@ -104,5 +136,34 @@ export class Product {
   protected toggleWishlist(): void {
     const p = this.product();
     if (p) this.wishlist.toggle(p.id);
+  }
+
+  protected openInterest(): void {
+    this.interestDone.set(false);
+    this.interestError.set(null);
+    this.interestForm.reset({ email: this.waitlist.suggestedEmail(), whatsapp: '' });
+    this.showInterest.set(true);
+  }
+
+  protected closeInterest(): void {
+    this.showInterest.set(false);
+  }
+
+  protected async submitInterest(): Promise<void> {
+    const p = this.product();
+    if (!p) return;
+    this.interestError.set(null);
+    if (this.interestForm.invalid) {
+      this.interestForm.markAllAsTouched();
+      return;
+    }
+    this.interestSaving.set(true);
+    const { error } = await this.waitlist.join(p.id, this.interestForm.getRawValue());
+    this.interestSaving.set(false);
+    if (error) {
+      this.interestError.set('Não foi possível registrar seu interesse. Tente novamente.');
+      return;
+    }
+    this.interestDone.set(true);
   }
 }

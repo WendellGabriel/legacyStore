@@ -51,6 +51,7 @@ export class ProductForm {
     weight_grams: [null as number | null],
     is_featured: [false],
     is_active: [true],
+    allow_preorder: [false],
     seo_title: [''],
     seo_description: [''],
   });
@@ -81,6 +82,7 @@ export class ProductForm {
           weight_grams: p.weight_grams,
           is_featured: p.is_featured,
           is_active: p.is_active,
+          allow_preorder: p.allow_preorder,
           seo_title: p.seo_title ?? '',
           seo_description: p.seo_description ?? '',
         });

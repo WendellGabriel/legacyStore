@@ -175,6 +175,11 @@ export const routes: Routes = [
           import('./features/admin/customers/customers').then((m) => m.Customers),
         title: 'Clientes — Admin',
       },
+      {
+        path: 'pre-venda',
+        loadComponent: () => import('./features/admin/waitlist/waitlist').then((m) => m.Waitlist),
+        title: 'Pré-venda — Admin',
+      },
       { path: '**', redirectTo: '' },
     ],
   },

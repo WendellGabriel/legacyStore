@@ -69,6 +69,13 @@
                 <a [routerLink]="['/admin/produtos', p.id]" class="grid h-8 w-8 place-items-center rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800" aria-label="Editar">
                   <mat-icon class="!h-5 !w-5 !text-xl">edit</mat-icon>
                 </a>
+                <button (click)="duplicate(p)" [disabled]="duplicatingId() === p.id" class="grid h-8 w-8 place-items-center rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50" aria-label="Duplicar" title="Duplicar como rascunho">
+                  @if (duplicatingId() === p.id) {
+                    <mat-icon class="!h-5 !w-5 !text-xl animate-spin">progress_activity</mat-icon>
+                  } @else {
+                    <mat-icon class="!h-5 !w-5 !text-xl">content_copy</mat-icon>
+                  }
+                </button>
                 <button (click)="remove(p)" class="grid h-8 w-8 place-items-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30" aria-label="Excluir">
                   <mat-icon class="!h-5 !w-5 !text-xl">delete_outline</mat-icon>
                 </button>

@@ -82,5 +82,13 @@ export const productFormSchema = z.object({
   weight_grams: z.number().int().nonnegative().nullable().optional(),
   is_featured: z.boolean().default(false),
   is_active: z.boolean().default(true),
+  allow_preorder: z.boolean().default(false),
 });
 export type ProductFormInput = z.infer<typeof productFormSchema>;
+
+// Pré-venda / lista de interesse --------------------------------
+export const waitlistInputSchema = z.object({
+  email: z.string().email('E-mail inválido'),
+  whatsapp: z.string().optional(),
+});
+export type WaitlistInput = z.infer<typeof waitlistInputSchema>;

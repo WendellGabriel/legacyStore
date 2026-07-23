@@ -19,6 +19,7 @@ export class Admin {
     { path: '/admin/categorias', label: 'Categorias', icon: 'category', exact: false },
     { path: '/admin/pedidos', label: 'Pedidos', icon: 'receipt_long', exact: false },
     { path: '/admin/estoque', label: 'Estoque', icon: 'warehouse', exact: false },
+    { path: '/admin/pre-venda', label: 'Pré-venda', icon: 'notifications_active', exact: false },
     { path: '/admin/banners', label: 'Banners', icon: 'image', exact: false },
     { path: '/admin/cupons', label: 'Cupons', icon: 'sell', exact: false },
     { path: '/admin/frete', label: 'Zonas de frete', icon: 'local_shipping', exact: false },

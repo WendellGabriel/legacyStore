@@ -7,6 +7,7 @@ import type {
   OrderStatus,
   Product,
   ProductFormInput,
+  ProductWaitlist,
   Profile,
   ShippingZone,
 } from '@legacystore/shared';
@@ -76,6 +77,47 @@ export class AdminService {
     await this.supabase.client.from('products').delete().eq('id', id);
   }
 
+  /**
+   * Clona um produto existente como RASCUNHO (inativo), gerando SKU/slug novos
+   * e copiando as imagens (reaproveitando as URLs públicas do Storage).
+   * Não copia estoque (começa em 0) para o admin ajustar antes de publicar.
+   */
+  async duplicateProduct(sourceId: string): Promise<{ id?: string; error?: string }> {
+    const src = await this.getProduct(sourceId);
+    if (!src) return { error: 'Produto não encontrado.' };
+
+    const suffix = crypto.randomUUID().slice(0, 6);
+    const input: ProductFormInput = {
+      sku: `${src.sku}-COPIA-${suffix}`,
+      name: `${src.name} (cópia)`,
+      slug: `${src.slug}-copia-${suffix}`,
+      description: src.description ?? undefined,
+      category_id: src.category_id,
+      product_type: src.product_type,
+      price: src.price,
+      compare_at_price: src.compare_at_price,
+      stock_quantity: 0,
+      low_stock_threshold: src.low_stock_threshold,
+      weight_grams: src.weight_grams,
+      is_featured: false,
+      is_active: false,
+      allow_preorder: src.allow_preorder,
+    };
+
+    const { id, error } = await this.createProduct(input);
+    if (error || !id) return { error: error ?? 'Falha ao duplicar.' };
+
+    // copia as imagens (referência à mesma URL pública; sem re-upload)
+    const images = [...(src.images ?? [])].sort((a, b) => a.position - b.position);
+    if (images.length) {
+      await this.supabase.client.from('product_images').insert(
+        images.map((img, i) => ({ product_id: id, url: img.url, alt: img.alt, position: i })),
+      );
+    }
+
+    return { id };
+  }
+
   // ---- Imagens (Supabase Storage) ----
   /** Faz upload de um arquivo para uma pasta do bucket e retorna a URL pública. */
   async uploadFile(folder: string, file: File): Promise<{ url?: string; error?: string }> {
@@ -102,6 +144,48 @@ export class AdminService {
 
   async removeProductImage(imageId: string): Promise<void> {
     await this.supabase.client.from('product_images').delete().eq('id', imageId);
+  }
+
+  // ---- Pré-venda / lista de interesse ----
+  /** Lista os interessados (waitlist) com o produto, mais recentes primeiro. */
+  async listWaitlist(onlyPending = false): Promise<ProductWaitlist[]> {
+    let q = this.supabase.client
+      .from('product_waitlist')
+      .select('*, product:products(id, name, slug, sku)')
+      .order('created_at', { ascending: false });
+    if (onlyPending) q = q.is('notified_at', null);
+    const { data } = await q;
+    return (data as ProductWaitlist[]) ?? [];
+  }
+
+  /** Marca um interessado como avisado (ou desmarca). */
+  async setWaitlistNotified(id: string, notified: boolean): Promise<{ error?: string }> {
+    const { error } = await this.supabase.client
+      .from('product_waitlist')
+      .update({ notified_at: notified ? new Date().toISOString() : null })
+      .eq('id', id);
+    return { error: error?.message };
+  }
+
+  async removeWaitlistEntry(id: string): Promise<void> {
+    await this.supabase.client.from('product_waitlist').delete().eq('id', id);
+  }
+
+  // ---- Configurações da loja ----
+  async getSetting<T = unknown>(key: string): Promise<T | null> {
+    const { data } = await this.supabase.client
+      .from('store_settings')
+      .select('value')
+      .eq('key', key)
+      .maybeSingle();
+    return ((data as { value: T } | null)?.value ?? null);
+  }
+
+  async setSetting(key: string, value: unknown): Promise<{ error?: string }> {
+    const { error } = await this.supabase.client
+      .from('store_settings')
+      .upsert({ key, value }, { onConflict: 'key' });
+    return { error: error?.message };
   }
 
   // ---- Categorias ----

@@ -29,6 +29,51 @@ Itens a configurar/construir **após o lançamento** (o site já é funcional se
 
 ## 🟡 Melhorias planejadas
 
+- [x] ~~**Alterar senha pelo perfil**~~ ✅ FEITO — card "Alterar senha" em
+  `/conta/perfil` (confirma a senha atual revalidando as credenciais e aplica a nova
+  via `supabase.auth.updateUser`). `AuthService.changePassword()`.
+
+- [x] ~~**Copiar/Duplicar produto no admin**~~ ✅ FEITO — botão de duplicar na lista
+  de produtos: clona como **rascunho inativo** (estoque 0, SKU/slug novos, imagens
+  copiadas) e abre o form do rascunho. `AdminService.duplicateProduct()`.
+
+- [x] **Pré-venda / lista de interesse (waitlist)** — ✅ FEITO (código). Migration
+  `0013_preorder_waitlist.sql` criada. **AÇÃO DO USUÁRIO:** aplicar
+  `supabase/_apply_preorder.sql` no SQL Editor do Supabase (cria a coluna
+  `products.allow_preorder`, a tabela `product_waitlist` com RLS, e o setting
+  `auto_preorder_on_zero`). Sem isso, o front não mostra o estado de pré-venda.
+  Implementado: flag por produto no form do admin ("Pré-venda ao esgotar"), toggle
+  global em `/admin/pre-venda`, badge + botão "Tenho interesse / avise-me" com modal
+  na PDP, badge "Pré-venda" no card, e a página admin com lista de interessados por
+  produto + exportar CSV + marcar avisado. Detalhes originais abaixo:
+
+  Quando um produto zera o
+  estoque, em vez de sair do ar ele entra em **pré-venda**, e o cliente pode
+  **manifestar interesse** deixando seu contato. Isso monta, para o admin, uma
+  **lista de interessados por produto** — usada para dimensionar melhor a recompra.
+  - **Escopo (decidido): apenas LISTA DE AVISO por enquanto** — não vende nem cobra
+    antecipado em pré-venda; só coleta o interesse do cliente. (Pré-venda com compra
+    antecipada fica como evolução futura.)
+  - **Controle pelo admin (decidido):** dois modos, combináveis —
+    (a) **automático:** ao zerar o estoque o produto entra em pré-venda sozinho
+    (flag global em `store_settings`, ex. `auto_preorder_on_zero`); e
+    (b) **manual:** o admin marca/desmarca por produto (flag `allow_preorder` no
+    produto), que tem prioridade sobre o automático.
+  - **Banco:** nova tabela `product_waitlist` (`product_id`, `user_id` nullable +
+    `email`/`whatsapp` para guest, `created_at`, `notified_at` nullable, unique por
+    produto+contato p/ evitar duplicidade). RLS: insert público/anon, select só admin.
+    + coluna `products.allow_preorder` (bool) e setting `auto_preorder_on_zero`.
+  - **Estado do produto:** "pré-venda" = produto **esgotado** (`stock <= 0`) **E**
+    (`allow_preorder` do produto **ou** `auto_preorder_on_zero` ligado). Nesse estado
+    o produto continua listável em vez de aparecer como indisponível.
+  - **Frontend (PDP + ProductCard):** quando em pré-venda, trocar "Adicionar ao
+    carrinho" por **"Tenho interesse / avise-me"** (badge "Pré-venda"). Modal simples
+    coletando e-mail/WhatsApp (autopreenche se logado) → grava em `product_waitlist`.
+  - **Admin:** toggle de pré-venda no form do produto + a flag global nas configurações;
+    listagem de interessados por produto (contagem + export/CSV) para priorizar
+    reestoque. Opcional: ao repor estoque, marcar `notified_at` e disparar aviso
+    (encaixa no **e-mail transacional**/WhatsApp — mesma infra Resend).
+
 - [ ] **E-mail transacional** (Resend — mesma conta do SMTP acima) — enviar automaticamente:
   - Pedido recebido · Pagamento confirmado · Pedido enviado (com rastreio)
   - Precisa: `RESEND_API_KEY` + domínio verificado
@@ -45,6 +90,39 @@ Itens a configurar/construir **após o lançamento** (o site já é funcional se
   PNG 192×192 e 512×512 (gerar versões quadradas da marca)
 
 - [ ] **Favicon** — trocar o `favicon.ico` padrão do Angular por um da marca
+
+## 🔒 Segurança (overview da aplicação)
+
+- [ ] **Overview de segurança** — varredura completa da aplicação, produzindo um
+  relatório com achados classificados por severidade (crítico/alto/médio/baixo) e
+  correções. Cobrir, no mínimo:
+  - **RLS (Postgres):** revisar as policies de **todas** as tabelas — garantir que
+    `select/insert/update/delete` só permitem o que deve; conferir que dados de um
+    cliente não vazam para outro; que `product_waitlist`/`addresses`/`orders` só são
+    lidos pelo dono ou admin; e que não há tabela com RLS desligado por engano.
+  - **RPCs `SECURITY DEFINER`** (`create_order`, `validate_coupon`, `adjust_stock`,
+    `admin_dashboard_stats`, `is_admin`): confirmar `search_path` fixo, checagem de
+    permissão dentro da função e que não dá para abusar (ex.: forjar preço/quantidade,
+    aplicar cupom indevido, ajustar estoque sem ser admin).
+  - **Webhook Mercado Pago:** validar a **assinatura** da notificação (header
+    `x-signature`) e reconsultar o pagamento no MP antes de marcar como pago — não
+    confiar no corpo recebido. Conferir idempotência (unique `provider_payment_id`).
+  - **Segredos/env:** confirmar que `SERVICE_ROLE`/`DATABASE_URL`/`MP_ACCESS_TOKEN`
+    nunca vão para o bundle do front (só `NG_APP_*`/anon key são públicas); `.env`
+    fora do git; secrets só no Supabase/Vercel. Rever histórico por vazamentos.
+  - **Supabase Storage:** bucket `products` é público para leitura, mas escrita só
+    admin — confirmar policies de upload/delete e limites de tipo/tamanho de arquivo.
+  - **Validação de entrada:** garantir que toda rota da API e RPC valida payload
+    (Zod/checagens) — CEP, cupom, quantidades, IDs — contra injeção e valores fora
+    de faixa. Conferir CORS da Edge Function (origens permitidas).
+  - **Auth:** políticas de senha, fluxo de reset, expiração de sessão/JWT, e o
+    `adminGuard` (garantir que rotas `/admin` e ações de escrita exigem admin de fato,
+    não só ocultam o menu).
+  - **Cabeçalhos/headers:** avaliar CSP, HSTS, `X-Content-Type-Options`,
+    `X-Frame-Options`/frame-ancestors, `Referrer-Policy` no front (Vercel) e API.
+  - **Dependências:** rodar auditoria (`pnpm audit`) e revisar libs desatualizadas.
+  - Rodar também o `/security-review` do Claude Code sobre o diff/base para achados
+    automáticos, e consolidar tudo num `SECURITY.md` com o status de cada item.
 
 ## 🟢 Pós-deploy / infraestrutura
 
