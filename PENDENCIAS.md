@@ -145,10 +145,11 @@ Itens a configurar/construir **após o lançamento** (o site já é funcional se
 - [~] **Testes automatizados** — em andamento. Dois runners:
   - `pnpm test` (Vitest, raiz) → 37 testes: `packages/shared` (isPreorder, schemas
     Zod, constantes) + `supabase/functions/store-api/lib.ts` (frete, validação).
-  - `ng test` em `apps/web` (Vitest+jsdom, via TestBed) → 50 testes: `CartService`,
-    `WishlistService`, `RecentlyViewedService`, `AddressService` (lookupCep),
-    `CatalogService` (filtro→query), `OrderService` (tradução de erros),
-    `WaitlistService` (dedupe) e `AdminService.duplicateProduct`. Mocks em `src/testing/`.
-  Total: ~87 testes. Falta: testes de componente, e2e do checkout
+  - `ng test` em `apps/web` (Vitest+jsdom, via TestBed) → 67 testes. Services:
+    Cart, Wishlist, RecentlyViewed, Address(lookupCep), Catalog(filtro→query),
+    Order(tradução de erros), Waitlist(dedupe), Settings, AdminService.duplicateProduct.
+    Componentes/pipes: `ProductCard` (badges pré-venda/esgotado/desconto + add),
+    `Carousel` (índice circular + navegação), `BrlPipe`. Mocks em `src/testing/`.
+  Total: ~104 testes. Falta: mais componentes (checkout/PDP), e2e do checkout
 - [ ] (Precaução) Rotacionar a senha do banco — um script temporário chegou a
   contê-la localmente antes de ser removido do commit (não foi publicado)
