@@ -11,6 +11,7 @@
     "api": "pnpm --filter api",
     "dev:web": "pnpm --filter web start",
     "lint": "pnpm -r lint",
+    "test": "pnpm --filter @legacystore/shared test",
     "format": "prettier --write \"**/*.{ts,html,scss,json,md}\""
   },
   "dependencies": {

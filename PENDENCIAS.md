@@ -133,6 +133,9 @@ Itens a configurar/construir **após o lançamento** (o site já é funcional se
   em `apps/web/public/robots.txt`
 - [ ] **Personalizar e-mails do Supabase Auth** (confirmação/recuperação) com a marca
 - [ ] **Revisão final** de segurança, acessibilidade e performance (Lighthouse)
-- [ ] **Testes automatizados** (unitários/e2e) — ainda não há cobertura
+- [~] **Testes automatizados** — FUNDAÇÃO criada (Vitest em `packages/shared`,
+  25 testes: `isPreorder`, schemas Zod, constantes). Rodar com `pnpm test`.
+  Falta: cobrir services do `apps/web` (Angular) e a lógica das Edge Functions;
+  e2e do checkout
 - [ ] (Precaução) Rotacionar a senha do banco — um script temporário chegou a
   contê-la localmente antes de ser removido do commit (não foi publicado)
