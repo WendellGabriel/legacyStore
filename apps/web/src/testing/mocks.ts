@@ -31,15 +31,19 @@ export function makeProduct(overrides: Partial<Product> = {}): Product {
 }
 
 /** Builder de query encadeável e "thenable" que resolve para { data, error }. */
-function queryResult<T>(data: T) {
-  const promise = Promise.resolve({ data, error: null });
+function queryResult<T>(data: T, error: { message: string } | null = null) {
+  const promise = Promise.resolve({ data, error });
   const builder: Record<string, unknown> = {
     select: () => builder,
+    insert: () => builder,
+    update: () => builder,
+    delete: () => builder,
+    upsert: () => builder,
     in: () => builder,
     eq: () => builder,
     order: () => builder,
-    maybeSingle: () => Promise.resolve({ data, error: null }),
-    single: () => Promise.resolve({ data, error: null }),
+    maybeSingle: () => Promise.resolve({ data, error }),
+    single: () => Promise.resolve({ data, error }),
     then: promise.then.bind(promise),
     catch: promise.catch.bind(promise),
     finally: promise.finally.bind(promise),
@@ -50,6 +54,8 @@ function queryResult<T>(data: T) {
 export interface SupabaseMockConfig {
   /** Linhas retornadas por qualquer `from(...).select(...)`. */
   rows?: unknown[];
+  /** Erro resolvido pela cadeia de `from(...)` (ex.: insert que falha). */
+  error?: { message: string } | null;
   /** Resposta de `rpc(name, params)` → { data, error }. */
   rpc?: { data?: unknown; error?: { message: string } | null };
 }
@@ -57,7 +63,7 @@ export interface SupabaseMockConfig {
 /** Mock mínimo do SupabaseService para injetar nos services. */
 export function mockSupabase(config: SupabaseMockConfig = {}): SupabaseService {
   const client = {
-    from: () => queryResult(config.rows ?? []),
+    from: () => queryResult(config.rows ?? [], config.error ?? null),
     rpc: () => Promise.resolve({ data: config.rpc?.data ?? null, error: config.rpc?.error ?? null }),
   };
   return { client } as unknown as SupabaseService;
