@@ -142,9 +142,11 @@ Itens a configurar/construir **após o lançamento** (o site já é funcional se
   em `apps/web/public/robots.txt`
 - [ ] **Personalizar e-mails do Supabase Auth** (confirmação/recuperação) com a marca
 - [ ] **Revisão final** de segurança, acessibilidade e performance (Lighthouse)
-- [~] **Testes automatizados** — FUNDAÇÃO criada (Vitest em `packages/shared`,
-  25 testes: `isPreorder`, schemas Zod, constantes). Rodar com `pnpm test`.
-  Falta: cobrir services do `apps/web` (Angular) e a lógica das Edge Functions;
-  e2e do checkout
+- [~] **Testes automatizados** — em andamento. Dois runners:
+  - `pnpm test` (Vitest, raiz) → 37 testes: `packages/shared` (isPreorder, schemas
+    Zod, constantes) + `supabase/functions/store-api/lib.ts` (frete, validação).
+  - `ng test` em `apps/web` (Vitest+jsdom, via TestBed) → 19 testes: `CartService`
+    (qtd/estoque/subtotal/cupom/total) e `WishlistService`. Mocks em `src/testing/`.
+  Falta: mais services (CatalogService, AddressService), componentes, e2e do checkout
 - [ ] (Precaução) Rotacionar a senha do banco — um script temporário chegou a
   contê-la localmente antes de ser removido do commit (não foi publicado)
