@@ -150,6 +150,8 @@ Deno.serve(async (req) => {
 
     return new Response('ok', { status: 200 });
   } catch (e) {
-    return new Response(`erro: ${(e as Error).message}`, { status: 500 });
+    // B2: loga server-side, resposta genérica (sem vazar detalhe).
+    console.error('webhook error:', (e as Error).message);
+    return new Response('erro interno', { status: 500 });
   }
 });

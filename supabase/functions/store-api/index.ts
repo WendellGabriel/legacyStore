@@ -178,6 +178,39 @@ async function createPreference(order: {
   return await res.json();
 }
 
+// ---- Validação de entrada (B3) ------------------------------------
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const MAX_ITEMS = 100;
+const MAX_QTY = 1000;
+
+function parseQuoteBody(
+  body: unknown,
+): { cep: string; items: { product_id: string; quantity: number }[] } | null {
+  if (typeof body !== 'object' || body === null) return null;
+  const b = body as Record<string, unknown>;
+  const cep = typeof b.cep === 'string' ? b.cep.replace(/\D/g, '') : '';
+  if (cep.length !== 8) return null;
+  if (!Array.isArray(b.items) || b.items.length === 0 || b.items.length > MAX_ITEMS) return null;
+  const items: { product_id: string; quantity: number }[] = [];
+  for (const raw of b.items) {
+    const it = raw as Record<string, unknown>;
+    const pid = it?.product_id;
+    const qty = it?.quantity;
+    if (typeof pid !== 'string' || !UUID_RE.test(pid)) return null;
+    if (typeof qty !== 'number' || !Number.isInteger(qty) || qty <= 0 || qty > MAX_QTY) return null;
+    items.push({ product_id: pid, quantity: qty });
+  }
+  return { cep, items };
+}
+
+function parseOrderNumber(body: unknown): string | null {
+  if (typeof body !== 'object' || body === null) return null;
+  const on = (body as Record<string, unknown>).order_number;
+  // formato: LS-YYYYMMDD-00000
+  if (typeof on !== 'string' || !/^LS-\d{8}-\d{5}$/.test(on)) return null;
+  return on;
+}
+
 // ---- App Hono ------------------------------------------------------
 const app = new Hono().basePath('/store-api');
 
@@ -198,11 +231,9 @@ app.use(
 app.get('/health', (c) => c.json({ ok: true, service: 'legacystore-store-api' }));
 
 app.post('/shipping/quote', async (c) => {
-  const body = await c.req.json().catch(() => null);
-  if (!body?.cep || !Array.isArray(body.items) || body.items.length === 0) {
-    return c.json({ error: 'Dados inválidos' }, 400);
-  }
-  const result = await calculateShipping(body.cep, body.items);
+  const parsed = parseQuoteBody(await c.req.json().catch(() => null));
+  if (!parsed) return c.json({ error: 'Dados inválidos' }, 400);
+  const result = await calculateShipping(parsed.cep, parsed.items);
   if (result.quotes.length === 0) {
     return c.json({ error: 'Não foi possível calcular o frete para este CEP.', ...result }, 422);
   }
@@ -212,13 +243,13 @@ app.post('/shipping/quote', async (c) => {
 app.get('/payments/mode', (c) => c.json({ dev: !mpConfigured() }));
 
 app.post('/payments/checkout', async (c) => {
-  const body = await c.req.json().catch(() => null);
-  if (!body?.order_number) return c.json({ error: 'Dados inválidos' }, 400);
+  const orderNumber = parseOrderNumber(await c.req.json().catch(() => null));
+  if (!orderNumber) return c.json({ error: 'Dados inválidos' }, 400);
 
   const sb = admin();
   const { data: order } = await sb
     .from('orders').select('*, items:order_items(*)')
-    .eq('order_number', body.order_number).maybeSingle();
+    .eq('order_number', orderNumber).maybeSingle();
   if (!order) return c.json({ error: 'Pedido não encontrado' }, 404);
   if (order.payment_status === 'approved') return c.json({ error: 'Pedido já foi pago' }, 409);
   if (!mpConfigured()) return c.json({ dev: true, message: 'Mercado Pago não configurado (modo dev).' });
@@ -227,17 +258,24 @@ app.post('/payments/checkout', async (c) => {
     const pref = await createPreference(order);
     return c.json({ init_point: pref.init_point, sandbox_init_point: pref.sandbox_init_point });
   } catch (e) {
-    return c.json({ error: (e as Error).message }, 502);
+    // B2: não vaza o erro cru do MP; loga server-side e responde genérico.
+    console.error('checkout error:', (e as Error).message);
+    return c.json({ error: 'Falha ao iniciar o pagamento. Tente novamente.' }, 502);
   }
 });
 
 app.post('/payments/dev-confirm', async (c) => {
-  if (mpConfigured()) return c.json({ error: 'Indisponível: Mercado Pago configurado.' }, 403);
-  const body = await c.req.json().catch(() => null);
-  if (!body?.order_number) return c.json({ error: 'Dados inválidos' }, 400);
+  // B1: só disponível em modo de desenvolvimento explícito (DEV_MODE=true).
+  // Em produção DEV_MODE nunca é setado, então a rota fica desativada mesmo
+  // que o MP_ACCESS_TOKEN seja removido por engano.
+  if (Deno.env.get('DEV_MODE') !== 'true' || mpConfigured()) {
+    return c.json({ error: 'Indisponível.' }, 403);
+  }
+  const orderNumber = parseOrderNumber(await c.req.json().catch(() => null));
+  if (!orderNumber) return c.json({ error: 'Dados inválidos' }, 400);
 
   const sb = admin();
-  const { data: order } = await sb.from('orders').select('id').eq('order_number', body.order_number).maybeSingle();
+  const { data: order } = await sb.from('orders').select('id').eq('order_number', orderNumber).maybeSingle();
   if (!order) return c.json({ error: 'Pedido não encontrado' }, 404);
   await sb.from('orders').update({ payment_status: 'approved', status: 'paid' }).eq('id', order.id);
   await sb.from('payments').insert({ order_id: order.id, provider: 'dev', method: 'manual', amount: 0, status: 'approved' });

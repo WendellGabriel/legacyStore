@@ -17,7 +17,18 @@ Corrigido no código (aguardando **deploy** — ver instruções ao final):
 - ✅ **M3** — CORS da Edge Function restrito à origem do site.
 - ✅ **B4** — headers de segurança no `vercel.json`.
 
-Pendentes (não implementados): **B1, B2, B3** e itens de infraestrutura.
+Corrigido no código (2ª leva — aguardando redeploy das Edge Functions):
+- ✅ **B1** — `/payments/dev-confirm` só responde com `DEV_MODE=true` (nunca setado
+  em produção), além de `!mpConfigured()`.
+- ✅ **B2** — mensagens de erro genéricas em `/payments/checkout` e no webhook
+  (detalhe vai só para o log).
+- ✅ **B3** — validação de entrada na Edge Function (UUID dos itens, quantidade
+  inteira com teto, CEP com 8 dígitos, formato do `order_number`).
+- ✅ **pnpm audit** — atualizado `@hono/node-server` para `^2.0.5` (corrige o único
+  aviso, moderado; era dep só do `apps/api` de dev). `pnpm audit` agora limpo.
+
+Pendentes (infraestrutura/processo): rotação da senha do banco, testes
+automatizados, e setar `MP_WEBHOOK_SECRET` (ativa o M1).
 
 ### Deploy necessário para valer em produção
 1. **SQL Editor:** rodar `supabase/_apply_security.sql` (migration 0014 — cria
