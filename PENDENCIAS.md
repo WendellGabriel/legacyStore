@@ -83,8 +83,17 @@ Itens a configurar/construir **após o lançamento** (o site já é funcional se
   público foi descontinuado). Quando tiver contrato Correios (ou Melhor Envio),
   plugar o carrier real em `apps/api/src/services/shipping.ts` (arquitetura já pronta)
 
-- [ ] **SSR (Angular Universal)** — renderização no servidor para SEO/performance
-  máximos (as meta tags dinâmicas já cobrem o essencial)
+- [ ] **SSR / Prerender (Angular)** — ADIADO (decisão 2026-07-24). Ganho é
+  incremental (o `SeoService` já injeta title/OG/descrição por página). **Pré-requisito
+  descoberto:** o app é SPA puro — há ~31 acessos a `localStorage`/`window`/`document`
+  (tema, carrinho, wishlist, auth, analytics, carrossel), vários no construtor de
+  serviços do shell. Prerender roda os componentes no Node → quebra até tudo virar
+  **SSR-safe** (guardar com `isPlatformBrowser(inject(PLATFORM_ID))`) + tratar
+  hydration mismatch (ex.: classe de tema no `<html>`). Só então: `@angular/ssr`,
+  `main.server.ts`, `app.config.server.ts`, `app.routes.server.ts` (home+produtos =
+  `RenderMode.Prerender`, resto `Client`), `outputMode: static` no angular.json.
+  Deploy segue estático (compatível com o vercel.json atual). Mexe em prod que já
+  funciona — fazer com verificação exaustiva local antes de qualquer push.
 
 - [ ] **Ícones PWA em PNG** — hoje é `icon.svg`; alguns dispositivos preferem
   PNG 192×192 e 512×512 (gerar versões quadradas da marca)
