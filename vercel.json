@@ -35,6 +35,6 @@
       "source": "/api/(.*)",
       "destination": "https://oratzgtadilcozstexec.supabase.co/functions/v1/store-api/$1"
     },
-    { "source": "/((?!api).*)", "destination": "/index.html" }
+    { "source": "/((?!api).*)", "destination": "/index.csr.html" }
   ]
 }

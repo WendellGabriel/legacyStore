@@ -34,6 +34,12 @@ Clique **Deploy**. Ao terminar, anote a URL (ex.: `legacystore.vercel.app`) e:
 - Atualize `APP_BASE_URL` (passo 2) com essa URL e **redeploy**
 - Atualize a linha `Sitemap:` em `apps/web/public/robots.txt` com o domínio
 
+> **Prerender estático (SSG):** o build pré-renderiza **`/` (home)** e **`/produtos`**
+> em HTML (SEO/LCP). A Vercel serve esses arquivos do filesystem; as demais rotas
+> caem no shell `index.csr.html` (fallback do `vercel.json`) e rodam como SPA. Sem
+> servidor Node — segue 100% estático. Após o deploy, confira no navegador (com JS
+> desligado ou "View source") que `/` e `/produtos` já vêm com header/título/meta.
+
 ## 4. Edge Function do webhook (Mercado Pago)
 
 No terminal, com o [Supabase CLI](https://supabase.com/docs/guides/cli):

@@ -93,17 +93,28 @@ Itens a configurar/construir **após o lançamento** (o site já é funcional se
   público foi descontinuado). Quando tiver contrato Correios (ou Melhor Envio),
   plugar o carrier real em `apps/api/src/services/shipping.ts` (arquitetura já pronta)
 
-- [ ] **SSR / Prerender (Angular)** — ADIADO (decisão 2026-07-24). Ganho é
-  incremental (o `SeoService` já injeta title/OG/descrição por página). **Pré-requisito
-  descoberto:** o app é SPA puro — há ~31 acessos a `localStorage`/`window`/`document`
-  (tema, carrinho, wishlist, auth, analytics, carrossel), vários no construtor de
-  serviços do shell. Prerender roda os componentes no Node → quebra até tudo virar
-  **SSR-safe** (guardar com `isPlatformBrowser(inject(PLATFORM_ID))`) + tratar
-  hydration mismatch (ex.: classe de tema no `<html>`). Só então: `@angular/ssr`,
-  `main.server.ts`, `app.config.server.ts`, `app.routes.server.ts` (home+produtos =
-  `RenderMode.Prerender`, resto `Client`), `outputMode: static` no angular.json.
-  Deploy segue estático (compatível com o vercel.json atual). Mexe em prod que já
-  funciona — fazer com verificação exaustiva local antes de qualquer push.
+- [x] **SSR / Prerender (Angular)** — ✅ FEITO (2026-08-01) como **prerender estático
+  (SSG)**, compatível com o deploy estático da Vercel. Passos:
+  1. App **SSR-safe**: novo helper `core/platform/is-browser.ts` (`isBrowser()`);
+     guardados todos os acessos a `window`/`document`/`localStorage`/`setInterval` em
+     theme, cart, wishlist, recently-viewed, analytics e carousel (inerte no browser).
+  2. `@angular/ssr` + `@angular/platform-server` instalados; `main.server.ts`
+     (com `BootstrapContext` — obrigatório no Angular 22, senão NG0401),
+     `app.config.server.ts`, `app.routes.server.ts` (**home `''` + `produtos` =
+     Prerender; `**` = Client**). `outputMode: static` + `server` no angular.json.
+  3. **Sem `provideClientHydration`** de propósito: dados vêm de fetch próprio do
+     Supabase (não rastreado pelo Angular), então não estão no HTML estático — o
+     cliente re-renderiza limpo sobre o shell (sem risco de hydration mismatch).
+  4. Deploy: `vercel.json` fallback agora → `/index.csr.html` (shell limpo; a Vercel
+     serve os arquivos prerenderizados `/` e `/produtos` do filesystem antes dos
+     rewrites). `ngsw-config.json` `index` → `/index.csr.html` (crawlers ignoram SW).
+  **Verificado localmente** (servidor estático imitando a Vercel): home e /produtos
+  servem HTML com header/nav/footer + `<title>`/meta corretos; Angular assume e
+  hidrata banners/produtos via cliente; deep-link `/carrinho` cai no shell CSR e
+  roteia; **zero erros de console**. Ganho: SEO/estrutura no HTML estático de home e
+  catálogo. **Falta:** deploy real na Vercel confirmar (só o usuário). Evolução
+  possível: rastrear os fetches (PendingTasks/TransferState) p/ pôr os dados de
+  produto também no HTML estático.
 
 - [ ] **Ícones PWA em PNG** — hoje é `icon.svg`; alguns dispositivos preferem
   PNG 192×192 e 512×512 (gerar versões quadradas da marca)
