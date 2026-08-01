@@ -150,11 +150,17 @@ não são reaproveitados (a function Deno é standalone). Validar `cep`, `items`
 
 ## Itens de infraestrutura / processo (fora do código)
 
-- [ ] **`pnpm audit`** — rodar auditoria de dependências e atualizar libs vulneráveis.
+- [x] **`pnpm audit`** — ✅ (2026-08-01) 6 achados (2 high / 2 moderate / 2 low), TODOS
+  em deps transitivas de **dev/build** (`@angular/cli`, `vitest`, `@angular/build`,
+  `@modelcontextprotocol/sdk` do CLI): fast-uri, brace-expansion, @hono/node-server,
+  tar, esbuild, @babel/core. **Nenhuma entra no bundle de produção nem nas Edge
+  Functions.** Resolvidos via `overrides` (faixas escopadas) no `pnpm-workspace.yaml`
+  → `pnpm audit` agora: **No known vulnerabilities found**. Build + 144 testes OK.
 - [ ] **Rotacionar a senha do banco** — um script temporário chegou a contê-la
   localmente antes de ser removido do commit (ver `PENDENCIAS.md`).
-- [ ] **Testes automatizados** — sem cobertura; ao menos testar `create_order`,
-  `validate_coupon` e o fluxo do webhook.
+- [~] **Testes automatizados** — cobertura ampla no front (~144 testes: services +
+  componentes Checkout/Confirmation/Product + lógica pura da store-api). Falta
+  cobrir `create_order`/`validate_coupon`/webhook no nível de banco (pgTAP/integração).
 - [ ] **Personalizar/limitar e-mails de auth** e configurar SMTP próprio (Resend) —
   já em `PENDENCIAS.md`.
 

@@ -146,7 +146,9 @@ Itens a configurar/construir **após o lançamento** (o site já é funcional se
     não só ocultam o menu).
   - **Cabeçalhos/headers:** avaliar CSP, HSTS, `X-Content-Type-Options`,
     `X-Frame-Options`/frame-ancestors, `Referrer-Policy` no front (Vercel) e API.
-  - **Dependências:** rodar auditoria (`pnpm audit`) e revisar libs desatualizadas.
+  - **Dependências:** ✅ `pnpm audit` rodado (2026-08-01) — 6 achados, todos em deps
+    de dev/build (fora do bundle de prod); resolvidos via `overrides` no
+    `pnpm-workspace.yaml` → "No known vulnerabilities found". Ver `SECURITY.md`.
   - Rodar também o `/security-review` do Claude Code sobre o diff/base para achados
     automáticos, e consolidar tudo num `SECURITY.md` com o status de cada item.
 

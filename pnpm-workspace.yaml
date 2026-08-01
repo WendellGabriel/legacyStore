@@ -13,3 +13,15 @@ ignoredBuiltDependencies:
   - esbuild
   - lmdb
   - msgpackr-extract
+
+# Overrides de segurança (pnpm audit) — todas são deps transitivas de dev/build
+# (via @angular/cli, vitest, @angular/build); nenhuma entra no bundle de produção
+# nem nas Edge Functions. Faixas escopadas para não afetar consumidores de majors
+# antigos (ex.: brace-expansion 1.x/2.x, tar 6.x). Ver SECURITY.md.
+overrides:
+  "fast-uri@>=3.0.0 <3.1.4": ">=3.1.4"
+  "brace-expansion@>=4.0.0 <5.0.8": ">=5.0.8"
+  "@hono/node-server@<2.0.5": ">=2.0.5"
+  "tar@>=7.0.0 <7.5.21": ">=7.5.21"
+  "esbuild@>=0.27.3 <0.28.1": ">=0.28.1"
+  "@babel/core@<=7.29.0": ">=7.29.1"
