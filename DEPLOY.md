@@ -56,6 +56,45 @@ Em [mercadopago.com.br → Suas integrações](https://www.mercadopago.com.br/de
 
 Sem `MP_ACCESS_TOKEN`, o checkout roda em **modo dev** (botão "simular pagamento").
 
+## 5b. E-mail transacional (Resend) — opcional, recomendado
+
+Envia automaticamente 3 e-mails ao cliente: **pedido recebido**, **pagamento
+confirmado** e **pedido enviado** (com rastreio). Enquanto `RESEND_API_KEY` não
+estiver configurada, o envio é um **no-op** — nada quebra no fluxo do pedido.
+
+1. **Conta Resend:** crie em [resend.com](https://resend.com) (grátis até 3k/mês),
+   gere uma **API key** e **verifique um domínio** (para o remetente). Sem domínio
+   verificado dá para testar usando `onboarding@resend.dev` como remetente.
+
+2. **Deploy da function + secrets:**
+
+   ```bash
+   supabase functions deploy order-emails --no-verify-jwt
+   supabase secrets set RESEND_API_KEY=re_xxx \
+     EMAIL_FROM="legacyStore <pedidos@SEU_DOMINIO>" \
+     APP_BASE_URL=https://legacy-store-web.vercel.app
+   ```
+
+   (opcional) `supabase secrets set ORDER_EMAILS_SECRET=uma_senha` — se definido, o
+   webhook precisa enviar o header `x-webhook-secret` com esse valor.
+
+3. **Settings no banco:** rode `supabase/_apply_email.sql` no SQL Editor
+   (migration 0015 — links dos e-mails/`app_base_url`).
+
+4. **Database Webhook em `orders`** (dispara a function a cada pedido novo /
+   mudança de status). No painel **Database → Webhooks → Create a new hook**:
+   - Table: `orders` · Events: **Insert** e **Update**
+   - Type: **Supabase Edge Functions** → selecione `order-emails`
+   - (se usar `ORDER_EMAILS_SECRET`, adicione o header `x-webhook-secret`)
+
+   Alternativa por SQL: descomente o bloco 2 de `supabase/_apply_email.sql`.
+
+A function decide o e-mail pela transição: INSERT→recebido, →`paid`→pago,
+→`shipped`→enviado. Não reenvia se o status não mudou. Testar reenvio manual:
+`POST .../functions/v1/order-emails` com `{"order_number":"LS-...","event":"paid"}`.
+
+> **Ao mudar o código da function, redeploy:** `supabase functions deploy order-emails --no-verify-jwt`.
+
 ## 6. Pós-deploy (checklist)
 
 - [ ] Site abre e a home carrega produtos

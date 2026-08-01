@@ -74,10 +74,20 @@ Itens a configurar/construir **após o lançamento** (o site já é funcional se
     reestoque. Opcional: ao repor estoque, marcar `notified_at` e disparar aviso
     (encaixa no **e-mail transacional**/WhatsApp — mesma infra Resend).
 
-- [ ] **E-mail transacional** (Resend — mesma conta do SMTP acima) — enviar automaticamente:
-  - Pedido recebido · Pagamento confirmado · Pedido enviado (com rastreio)
-  - Precisa: `RESEND_API_KEY` + domínio verificado
-  - Montar templates com a marca e disparo no webhook / mudança de status
+- [x] **E-mail transacional** (Resend) — ✅ FEITO (código). Edge Function
+  `supabase/functions/order-emails` + templates da marca (`templates.ts`,
+  puro/testado) enviam automaticamente: **pedido recebido · pagamento confirmado ·
+  pedido enviado** (com rastreio). Disparo centralizado por **Database Webhook** em
+  `orders` (INSERT/UPDATE) — a function deriva o evento pela transição de status
+  (`logic.ts::deriveEvent`), sem tocar em webhook/admin/checkout. Degrada suave: sem
+  `RESEND_API_KEY` é no-op (não quebra o pedido). Migration `0015_email_settings.sql`
+  (+`_apply_email.sql`). 17 testes novos (render + deriveEvent).
+  **AÇÃO DO USUÁRIO** (ver DEPLOY.md §5b): (1) conta Resend + API key + domínio
+  verificado; (2) `supabase functions deploy order-emails --no-verify-jwt` +
+  `supabase secrets set RESEND_API_KEY=... EMAIL_FROM=... APP_BASE_URL=...`;
+  (3) rodar `_apply_email.sql` no SQL Editor; (4) criar o Database Webhook em `orders`
+  (Insert+Update → function order-emails). Sem domínio, dá p/ testar com
+  `onboarding@resend.dev`.
 
 - [ ] **Correios (frete real)** — hoje é **estimativa por região** (o webservice
   público foi descontinuado). Quando tiver contrato Correios (ou Melhor Envio),
