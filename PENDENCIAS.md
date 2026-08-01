@@ -108,7 +108,11 @@ Itens a configurar/construir **após o lançamento** (o site já é funcional se
 - [ ] **Ícones PWA em PNG** — hoje é `icon.svg`; alguns dispositivos preferem
   PNG 192×192 e 512×512 (gerar versões quadradas da marca)
 
-- [ ] **Favicon** — trocar o `favicon.ico` padrão do Angular por um da marca
+- [x] **Favicon** — ✅ FEITO. Favicon SVG da marca (`icon.svg`, raio "L" no gradiente
+  LEGACY) já era o principal; adicionados fallbacks: `favicon.ico` (embute o
+  `icon-192.png`, p/ navegadores/contextos sem SVG e `/favicon.ico` direto) +
+  `<link rel="icon" png>` e `apple-touch-icon` agora em PNG (iOS não aceita SVG).
+  Refs no `index.html`.
 
 ## 🔒 Segurança (overview da aplicação)
 
