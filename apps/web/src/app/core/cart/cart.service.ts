@@ -1,6 +1,7 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import type { Product } from '@legacystore/shared';
 import { SupabaseService } from '../supabase/supabase.service';
+import { isBrowser } from '../platform/is-browser';
 
 const STORAGE_KEY = 'legacystore-cart';
 const COUPON_KEY = 'legacystore-coupon';
@@ -24,6 +25,7 @@ export interface CartLine {
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly supabase = inject(SupabaseService);
+  private readonly browser = isBrowser();
 
   private readonly stored = signal<StoredItem[]>(this.read());
   private readonly cache = new Map<string, Product>();
@@ -40,15 +42,21 @@ export class CartService {
   readonly whenReady = new Promise<void>((resolve) => (this.resolveReady = resolve));
 
   // Cupom (persistido; revalidado autoritativamente pela RPC no pedido)
-  readonly couponCode = signal<string | null>(localStorage.getItem(COUPON_KEY));
+  readonly couponCode = signal<string | null>(
+    this.browser ? localStorage.getItem(COUPON_KEY) : null,
+  );
   readonly couponDiscount = signal(0);
   readonly total = computed(() => Math.max(0, this.subtotal() - this.couponDiscount()));
 
   constructor() {
-    // persiste sempre que o conteúdo muda
-    effect(() => localStorage.setItem(STORAGE_KEY, JSON.stringify(this.stored())));
+    // persiste sempre que o conteúdo muda (apenas no navegador)
+    effect(() => {
+      const items = this.stored();
+      if (this.browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    });
     effect(() => {
       const code = this.couponCode();
+      if (!this.browser) return;
       if (code) localStorage.setItem(COUPON_KEY, code);
       else localStorage.removeItem(COUPON_KEY);
     });
@@ -85,6 +93,7 @@ export class CartService {
   }
 
   private read(): StoredItem[] {
+    if (!this.browser) return [];
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       return raw ? (JSON.parse(raw) as StoredItem[]) : [];
@@ -95,6 +104,11 @@ export class CartService {
 
   /** Carrega os dados dos produtos do carrinho e monta as linhas. */
   private async hydrate(): Promise<void> {
+    // No servidor não há carrinho salvo — libera o whenReady e sai.
+    if (!this.browser) {
+      this.resolveReady();
+      return;
+    }
     const items = this.stored();
     const missing = items.map((i) => i.productId).filter((id) => !this.cache.has(id));
 

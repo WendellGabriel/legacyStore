@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import type { SettingsService } from '../settings/settings.service';
+import { isBrowser } from '../platform/is-browser';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 declare global {
@@ -19,12 +20,13 @@ declare global {
 @Injectable({ providedIn: 'root' })
 export class AnalyticsService {
   private readonly router = inject(Router);
+  private readonly browser = isBrowser();
   private gaId = '';
   private pixelId = '';
   private started = false;
 
   init(settings: SettingsService): void {
-    if (this.started) return;
+    if (this.started || !this.browser) return; // scripts de terceiros só no navegador
     this.started = true;
 
     this.gaId = settings.string('ga_measurement_id').trim();

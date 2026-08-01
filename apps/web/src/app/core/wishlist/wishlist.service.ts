@@ -1,6 +1,7 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import type { Product } from '@legacystore/shared';
 import { SupabaseService } from '../supabase/supabase.service';
+import { isBrowser } from '../platform/is-browser';
 
 const STORAGE_KEY = 'legacystore-wishlist';
 
@@ -8,15 +9,20 @@ const STORAGE_KEY = 'legacystore-wishlist';
 @Injectable({ providedIn: 'root' })
 export class WishlistService {
   private readonly supabase = inject(SupabaseService);
+  private readonly browser = isBrowser();
 
   private readonly ids = signal<string[]>(this.read());
   readonly count = computed(() => this.ids().length);
 
   constructor() {
-    effect(() => localStorage.setItem(STORAGE_KEY, JSON.stringify(this.ids())));
+    effect(() => {
+      const ids = this.ids();
+      if (this.browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+    });
   }
 
   private read(): string[] {
+    if (!this.browser) return [];
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       return raw ? (JSON.parse(raw) as string[]) : [];

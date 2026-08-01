@@ -2,6 +2,7 @@ import { Component, DestroyRef, inject, input, signal, effect } from '@angular/c
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import type { Banner } from '@legacystore/shared';
+import { isBrowser } from '../../../core/platform/is-browser';
 
 @Component({
   selector: 'app-carousel',
@@ -13,6 +14,7 @@ export class Carousel {
   readonly interval = input(5000);
 
   protected readonly current = signal(0);
+  private readonly browser = isBrowser();
   private timer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
@@ -27,6 +29,7 @@ export class Carousel {
   }
 
   private start(): void {
+    if (!this.browser) return; // sem auto-play no servidor (prerender)
     this.timer = setInterval(() => this.next(), this.interval());
   }
 

@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import type { Product } from '@legacystore/shared';
 import { SupabaseService } from '../supabase/supabase.service';
+import { isBrowser } from '../platform/is-browser';
 
 const STORAGE_KEY = 'legacystore-recently-viewed';
 const MAX = 12;
@@ -9,8 +10,10 @@ const MAX = 12;
 @Injectable({ providedIn: 'root' })
 export class RecentlyViewedService {
   private readonly supabase = inject(SupabaseService);
+  private readonly browser = isBrowser();
 
   private read(): string[] {
+    if (!this.browser) return [];
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       return raw ? (JSON.parse(raw) as string[]) : [];
@@ -21,6 +24,7 @@ export class RecentlyViewedService {
 
   /** Registra um produto como visto (move para o topo). */
   track(productId: string): void {
+    if (!this.browser) return;
     const ids = this.read().filter((id) => id !== productId);
     ids.unshift(productId);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(ids.slice(0, MAX)));
