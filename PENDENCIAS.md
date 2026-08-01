@@ -16,13 +16,16 @@ Itens a configurar/construir **após o lançamento** (o site já é funcional se
 - [ ] **Preencher `store_settings`** (via Admin ou SQL): WhatsApp real, `ga_measurement_id`
   (Google Analytics), `meta_pixel_id`, `origin_cep` (CEP da loja), `free_shipping_threshold`
 
-- [ ] **Resend (SMTP dos e-mails de autenticação)** — o e-mail embutido do Supabase
-  é só para testes (limite ~2-4/hora e cai em spam), o que **quebra o reset de senha**
-  em produção. Configurar SMTP próprio:
-  - Criar conta em [resend.com](https://resend.com) (grátis até 3k/mês) → **API key** + verificar domínio
-  - Supabase → **Authentication → SMTP Settings** → preencher com os dados do Resend
+- [ ] **Resend (SMTP dos e-mails de autenticação)** — ⏸️ **AGUARDANDO DOMÍNIO**
+  (decisão do usuário 2026-08-01). Conta Resend já criada e em uso pelo e-mail
+  transacional (abaixo). O e-mail embutido do Supabase é só para testes (limite
+  ~2-4/hora e cai em spam), o que **quebra o reset de senha** em produção. Quando
+  tiver um **domínio verificado no Resend**, configurar SMTP próprio:
+  - Supabase → **Authentication → Emails → SMTP Settings** → Enable Custom SMTP:
+    Host `smtp.resend.com`, Port `465` (ou `587`), User `resend`, Password = a
+    **API key** do Resend, Sender email = endereço do **domínio verificado**
+    (o `onboarding@resend.dev` não é aceito no SMTP de auth), Sender name `legacyStore`.
   - Resolve: reset de senha, confirmação de cadastro e demais e-mails de auth
-  - Mesma conta Resend serve para o **e-mail transacional** (abaixo)
   - Contexto: o bug do link de reset (localhost / rota errada) JÁ foi corrigido
     (commit 9ca8035); o que falta é sair do e-mail embutido limitado
   - Workaround imediato p/ redefinir senha sem e-mail: `apps/api/_setpass.mjs`
@@ -74,7 +77,13 @@ Itens a configurar/construir **após o lançamento** (o site já é funcional se
     reestoque. Opcional: ao repor estoque, marcar `notified_at` e disparar aviso
     (encaixa no **e-mail transacional**/WhatsApp — mesma infra Resend).
 
-- [x] **E-mail transacional** (Resend) — ✅ FEITO (código). Edge Function
+- [x] **E-mail transacional** (Resend) — ✅ FEITO e **VALIDADO EM PRODUÇÃO**
+  (2026-08-01): usuário criou a conta Resend, deployou `order-emails` + secrets
+  (`RESEND_API_KEY`/`EMAIL_FROM=onboarding@resend.dev`/`APP_BASE_URL`), rodou o
+  `_apply_email.sql`, criou o Database Webhook (após ativar `pg_net`), fez um pedido
+  de teste e **recebeu o e-mail "Pedido recebido"**. Enquanto usar `onboarding@resend.dev`,
+  o Resend só entrega para o e-mail do dono da conta — para enviar a clientes reais,
+  verificar um domínio no Resend e re-setar `EMAIL_FROM` + redeploy. Edge Function
   `supabase/functions/order-emails` + templates da marca (`templates.ts`,
   puro/testado) enviam automaticamente: **pedido recebido · pagamento confirmado ·
   pedido enviado** (com rastreio). Disparo centralizado por **Database Webhook** em
