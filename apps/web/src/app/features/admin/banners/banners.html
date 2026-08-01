@@ -20,7 +20,7 @@
           @else { <mat-icon>upload</mat-icon> }
           <input type="file" accept="image/*" (change)="onFileSelected($event)" class="hidden" />
         </label>
-        @if (imageUrl()) { <img [src]="imageUrl()" class="h-24 max-w-xs rounded-xl object-cover" /> }
+        @if (imageUrl()) { <img [src]="imageUrl()" alt="Pré-visualização do banner" class="h-24 max-w-xs rounded-xl object-cover" /> }
       </div>
       <p class="mt-1 text-xs text-neutral-400">Recomendado: imagem larga (proporção ~3:1). Requer o bucket "products" no Storage.</p>
     </div>
@@ -48,7 +48,7 @@
     <div class="mt-4 space-y-3">
       @for (b of items(); track b.id) {
         <div class="flex items-center gap-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3">
-          <img [src]="b.image_url" class="h-16 w-28 shrink-0 rounded-lg object-cover" />
+          <img [src]="b.image_url" [alt]="b.title || 'Banner'" class="h-16 w-28 shrink-0 rounded-lg object-cover" />
           <div class="flex-1 text-sm">
             <p class="font-medium text-neutral-800 dark:text-neutral-100">{{ b.title || '(sem título)' }}</p>
             <p class="text-neutral-500">{{ b.link_url || '—' }} · pos {{ b.position }} · {{ b.is_active ? 'ativo' : 'inativo' }}</p>

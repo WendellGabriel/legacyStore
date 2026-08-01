@@ -80,9 +80,9 @@
       <div class="mt-4 flex flex-wrap gap-3">
         @for (img of images(); track img.id) {
           <div class="relative h-24 w-24 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-            <img [src]="img.url" class="h-full w-full object-cover" />
+            <img [src]="img.url" alt="Imagem do produto" class="h-full w-full object-cover" />
             <button type="button" (click)="removeImage(img)" class="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-black/60 text-white" aria-label="Remover">
-              <mat-icon class="!h-4 !w-4 !text-base">close</mat-icon>
+              <mat-icon aria-hidden="true" class="!h-4 !w-4 !text-base">close</mat-icon>
             </button>
           </div>
         }

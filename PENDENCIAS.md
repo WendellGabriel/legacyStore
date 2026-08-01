@@ -155,7 +155,16 @@ Itens a configurar/construir **após o lançamento** (o site já é funcional se
 - [ ] **Domínio próprio** na Vercel → atualizar `APP_BASE_URL` e a linha `Sitemap:`
   em `apps/web/public/robots.txt`
 - [ ] **Personalizar e-mails do Supabase Auth** (confirmação/recuperação) com a marca
-- [ ] **Revisão final** de segurança, acessibilidade e performance (Lighthouse)
+- [~] **Revisão final** de segurança, acessibilidade e performance (Lighthouse).
+  Segurança: ver `SECURITY.md`. **A11y/perf (2026-08-01):** varredura estática +
+  correções aplicadas — skip-link "Pular para o conteúdo" no shell (`app.html`,
+  `<main id="main-content" tabindex="-1">`); `display=block` no Material Icons (evita
+  flash do texto do ligature); `aria-hidden` em ícones decorativos de estado vazio
+  (catálogo, wishlist, botão remover do form de produto); `alt` nas imagens do admin
+  (banners preview/lista, imagens do produto). Imagens de cliente já tinham
+  `alt`+`loading="lazy"`; header/product-card/carousel/cart já tinham `aria-label`.
+  **FALTA:** rodar o **Lighthouse real** no navegador (perf/contraste/LCP) — precisa
+  do usuário no navegador real; e um e2e de a11y (axe) se quiser automatizar.
 - [~] **Testes automatizados** — em andamento. Dois runners:
   - `pnpm test` (Vitest, raiz) → 37 testes: `packages/shared` (isPreorder, schemas
     Zod, constantes) + `supabase/functions/store-api/lib.ts` (frete, validação).
